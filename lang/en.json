@@ -1,0 +1,7 @@
+{
+    "Reset Password Notification": "Parolni tiklash haqida bildirishnoma",
+    "You are receiving this email because we received a password reset request for your account.": "Sizning akkauntingiz uchun parolni tiklash soʻrovi qabul qilindi.",
+    "Reset Password": "Parolni tiklash",
+    "This password reset link will expire in :count minutes.": "Bu parolni tiklash havolasi :count daqiqadan keyin tugaydi.",
+    "If you did not request a password reset, no further action is required.": "Agar siz parolni tiklashni so‘ramagan bo‘lsangiz, hech qanday harakat talab qilinmaydi."
+}
