@@ -14,7 +14,7 @@ class CategorySaveRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => 'required|min:3|unique:categories,name,'. $this->route('category')?->id,
+            'title' => 'required|min:3|unique:categories,title,'. $this->route('category')?->id,
         ];
     }
 }

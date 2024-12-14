@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\Admin\Service\ServiceController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\Warehouse\GoodsController;
 use App\Http\Controllers\Admin\Warehouse\SupplierController;
@@ -54,6 +55,15 @@ Route::middleware(['auth', 'worker'])->group(function () {
         Route::controller(SupplierController::class)->prefix('suppliers')->as('suppliers.')->group(function () {
             Route::get('/', 'index')->name('index');
             Route::post('save/{supplier?}', 'save')->name('save');
+        });
+
+        Route::controller(ServiceController::class)->prefix('services')->as('services.')->group(function () {
+            Route::get('/categories', 'categories')->name('categories.index');
+            Route::post('/categories/save/{serviceCategory?}', 'categorySave')->name('categories.save');
+
+            Route::get('/', 'services')->name('index');
+            Route::get('/form/{service?}', 'serviceForm')->name('form');
+            Route::post('/save/{service?}', 'serviceSave')->name('save');
         });
     });
 });

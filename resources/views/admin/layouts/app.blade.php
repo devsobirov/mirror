@@ -26,7 +26,7 @@
                     </a>
                 </h1>
                 <div class="navbar-nav flex-row order-md-last">
-                    <div class="d-none d-md-flex me-2">
+                    <div class="d-sm-none d-md-flex me-2">
                         <a x-cloak href="#" @click.prevent="toggleTheme()" class="nav-link px-0" data-bs-toggle="tooltip" data-bs-placement="bottom" aria-label="Enable light mode" :data-bs-original-title="dark ? `Включить светлую тему` : `Включить тёмную тему`">
                             <span x-cloak x-show="!dark"><x-svg.moon></x-svg.moon></span>
                             <span x-cloak x-show="dark"><x-svg.sun></x-svg.sun></span>

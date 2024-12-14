@@ -18,6 +18,14 @@
                     <span class="nav-link-title">Boshqaruv</span>
                 </a>
                 <div class="dropdown-menu" data-bs-popper="static">
+                    <a class="dropdown-item @if(!request()->routeIs('admin.services.categories.*') && request()->routeIs('admin.services.*')) active @endif" href="{{route('admin.services.index')}}">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block"><x-svg.wrench></x-svg.wrench></span>
+                        <span class="nav-link-title">Xizmatlar tariflari</span>
+                    </a>
+                    <a class="dropdown-item @if(request()->routeIs('admin.services.categories')) active @endif" href="{{route('admin.services.categories.index')}}">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block"><x-svg.tools></x-svg.tools></span>
+                        <span class="nav-link-title">Xizmat turlari</span>
+                    </a>
                     @if(auth()->user()->isAdmin())
                         <a class="dropdown-item @if(request()->routeIs('admin.users.*')) active @endif" href="{{route('admin.users.index')}}">
                             <span class="nav-link-icon d-md-none d-lg-inline-block"><x-svg.users></x-svg.users></span>
