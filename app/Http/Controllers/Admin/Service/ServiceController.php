@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Admin\Service;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Service\CategorySaveRequest;
+use App\Http\Requests\Service\ServiceSaveRequest;
 use App\Models\Services\Service;
 use App\Models\Services\ServiceCategory;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 
 class ServiceController extends Controller
 {
@@ -18,30 +21,48 @@ class ServiceController extends Controller
         return view('admin.services.categories', compact('items'));
     }
 
-    public function categorySave(Request $request, ?ServiceCategory $serviceCategory)
+    public function categorySave(CategorySaveRequest $request, ?ServiceCategory $serviceCategory)
     {
-        $data = $request->validate([
-            'title' => 'required|min:3|unique:service_categories,title,'. $serviceCategory?->id,
-        ], [
-            'title.unique' => 'Ushbu nom boshqa xizmat turi uchun kiritilgan, boshqani kiriting'
-        ]);
-        $serviceCategory->fill($data);
+        $serviceCategory->fill($request->validated());
         $serviceCategory->save();
         return redirect()->back()->with('success', 'Muvaffaqiyatli saqlandi');
     }
 
     public function services()
     {
+        $items = Service::query()
+            ->byCategory(\request('category_id'))
+            ->search(\request('search'))
+            ->with('category')
+            ->orderBy('category_id')
+            ->orderBy('name')
+            ->paginate(30);
 
+        $categories = ServiceCategory::select('id', 'title')->get();
+        return view('admin.services.index', compact('items', 'categories'));
     }
 
     public function serviceForm(?Service $service)
     {
-
+        $categories = ServiceCategory::select('id', 'title')->get();
+        return view('admin.services.form', compact('service', 'categories'));
     }
 
-    public function serviceSave(Request $request, ?Service $service)
+    public function serviceSave(ServiceSaveRequest $request, ?Service $service)
     {
+        dd($request->all(), $service);
+    }
 
+    private function saveImage(?UploadedFile $image): ?string
+    {
+        if ($image) {
+            $path = Service::IMAGE_PATH;
+            $filename = \Str::random(10) . '.' . $image->getClientOriginalExtension();
+            $image->move($path, $filename);
+
+            return $path . '/' . $filename;
+        }
+
+        return null;
     }
 }
