@@ -50,7 +50,13 @@ class ServiceController extends Controller
 
     public function serviceSave(ServiceSaveRequest $request, ?Service $service)
     {
-        dd($request->all(), $service);
+        $data = $request->validated();
+        $data['image'] = $this->saveImage($request->file('image')) ?? $service->image;
+        $data['active'] = !empty($data['active']);
+        $service->fill($data);
+        $service->save();
+        return redirect()->route('admin.services.form', ['service' => $service->id])
+            ->with('success', 'Muvaffaqiyatli saqlandi');
     }
 
     private function saveImage(?UploadedFile $image): ?string

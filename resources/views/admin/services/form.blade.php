@@ -13,8 +13,8 @@
                         Tariflar
                     </div>
                     <h2 class="page-title">
-                        @if($service->exists())
-                            Tahrirlash - {{$service->full_name}}
+                        @if($service->id)
+                            Tahrirlash - {{$service->full_title}}
                         @else
                             Yangi tarif yaratish
                         @endif
@@ -32,7 +32,7 @@
 
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-lg-6 mb-3">
+                        <div class="col-lg-4 mb-3">
                             <div class="form-label">Xizmat turini tanlang</div>
                             <select name="category_id" class="form-select" required>
                                 <option value="">Tanlang</option>
@@ -45,12 +45,34 @@
                             @enderror
                         </div>
 
-                        <div class="col-lg-6 mb-3">
+                        <div class="col-lg-4 mb-3">
                             <div class="form-label">Nomi</div>
                             <input type="text" name="name" value="{{$service->name}}" required min="3" placeholder="SALOX 5 kVt" class="form-control @error('name') is-invalid @enderror">
                             @error('name')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-lg-4">
+                            <label class="form-label">Xizmat birligi nomi</label>
+                            <div class="input-group">
+                                <input type="text" name="unit" class="form-control" value="{{$service->unit}}" required>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <label class="form-label">1 xizmat birligi uchun narx (UZS)</label>
+                            <div class="input-group">
+                                <input type="number" name="price" class="form-control" min="0" value="{{$service->price}}">
+                                <button type="button" class="btn">UZS</button>
+                            </div>
+                        </div>
+                        <div class="col-lg-2">
+                            <label class="form-label">Ustama narx (%)</label>
+                            <div class="input-group">
+                                <input type="number" name="margin" class="form-control" min="0" value="{{$service->margin}}">
+                                <button type="button" class="btn">%</button>
+                            </div>
                         </div>
                     </div>
 

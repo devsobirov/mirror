@@ -2,6 +2,7 @@
 /node_modules
 /public/assets/images/clients
 /public/assets/images/goods
+/public/assets/images/services
 /public/hot
 /public/storage
 /storage/*.key

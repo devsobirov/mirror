@@ -14,11 +14,14 @@ class ServiceSaveRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255|min:3|unique:goods,name,'. $this->route('service')?->id,
-            'category_id' => 'nullable|integer',
+            'name' => 'required|string|max:255|min:3|unique:services,name,'. $this->route('service')?->id,
+            'category_id' => 'required|integer',
             'image' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:2048',
             'status' => 'boolean',
-            'price' => 'nullable|numeric|min:0',
+            'unit' => 'required|string|min:0',
+            'price' => 'required|numeric|min:0',
+            'margin' => 'required|numeric|min:0',
+            'active' => 'boolean',
         ];
     }
 }

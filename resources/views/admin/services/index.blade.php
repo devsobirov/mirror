@@ -8,16 +8,16 @@
                 Tovarlar ({{count($items)}})
             </h2>
             <div class="col-auto ms-auto d-print-none">
-                <form action="{{route('admin.goods.index')}}" class="d-md-flex d-sm-block align-items-center">
+                <form action="{{route('admin.services.index')}}" class="d-md-flex d-sm-block align-items-center">
                     <select class="form-select mr-2" name="category_id">
-                        <option value="">Barcha kategoriyalar</option>
+                        <option value="">Xizmat turi</option>
                         @foreach($categories as $category)
                             <option value="{{$category->id}}" @if(request('category_id') == $category->id) selected @endif>{{$category->title}}</option>
                         @endforeach
                     </select>
-                    <input type="search" class="form-control d-inline-block w-12 me-1" minlength="2" placeholder="Tovar nomi ..." name="search" value="{{request('search')}}">
+                    <input type="search" class="form-control d-inline-block w-12 me-1" minlength="2" placeholder="tarif nomi ..." name="search" value="{{request('search')}}">
                     <button class="btn mx-1 btn-icon btn-azure" title="Izlash"><x-svg.search></x-svg.search></button>
-                    <a href="{{route('admin.services.form')}}" class="btn btn-primary">Yangi tovar</a>
+                    <a href="{{route('admin.services.form')}}" class="btn btn-primary">Yangi tarif yaratish</a>
                 </form>
             </div>
         </div>
@@ -32,11 +32,10 @@
                         <tr>
                             <th>ID</th>
                             <th>Nomi</th>
+                            <th>Birlik</th>
                             <th>Narx - UZS</th>
                             <th>Ustama - %</th>
-                            <th>Status</th>
-                            <th>Yaratilgan</th>
-                            <th>Tahrirlangan</th>
+                            <th>Holati</th>
                             <th></th>
                         </tr>
                         </thead>
@@ -52,6 +51,9 @@
                                         <p style="font-weight: 500" class="m-0">{{ $item->full_title }}</p>
                                     </div>
                                 </td>
+                                <td>{{$item->unit}}</td>
+                                <td>{{$item->price}} UZS</td>
+                                <td>{{$item->margin}} %</td>
                                 <td>
                                     @if($item->active)
                                         <span class="badge bg-green text-green-fg">Aktiv</span>
@@ -59,10 +61,8 @@
                                         <span class="badge bg-red text-red-fg">O'chirilgan</span>
                                     @endif
                                 </td>
-                                <td>{{ $item->created_at->diffForhumans() }}</td>
-                                <td>{{ $item->updated_at->diffForhumans() }}</td>
                                 <td>
-                                    <a href="{{route('admin.services.form', ['item' => $item->id])}}" class="btn btn-icon btn-success">
+                                    <a href="{{route('admin.services.form', ['service' => $item->id])}}" class="btn btn-icon btn-success">
                                         <x-svg.pen></x-svg.pen>
                                     </a>
                                 </td>
