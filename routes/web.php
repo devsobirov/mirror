@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\Warehouse\GoodsController;
 use App\Http\Controllers\Admin\Warehouse\SupplierController;
 use App\Http\Controllers\Admin\Warehouse\WarehouseController;
+use App\Http\Controllers\Service\OffersController;
 use App\Http\Controllers\Warehouse\ExpenseController;
 use App\Http\Controllers\Warehouse\IncomeController;
 use App\Http\Controllers\Warehouse\MainController;
@@ -35,6 +36,11 @@ Route::middleware(['auth', 'worker'])->group(function () {
         Route::get('expense-edit/{balance}', [ExpenseController::class, 'edit'])->name('expenses.edit');
         Route::post('expense-update/{balance}', [ExpenseController::class, 'update'])->name('expenses.update');
         Route::delete('expense-delete/{balance}', [ExpenseController::class, 'delete'])->name('expenses.delete');
+    });
+
+    Route::group(['controller' => OffersController::class, 'prefix' => 'offers', 'as' => 'offers.'], function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/form', 'form')->name('form');
     });
 
     Route::middleware(['auth', 'admin'])->prefix('admin')->as('admin.')->group(function () {

@@ -52,7 +52,6 @@ class ServiceController extends Controller
     {
         $data = $request->validated();
         $data['image'] = $this->saveImage($request->file('image')) ?? $service->image;
-        $data['active'] = !empty($data['active']);
         $service->fill($data);
         $service->save();
         return redirect()->route('admin.services.form', ['service' => $service->id])

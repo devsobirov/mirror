@@ -45,7 +45,7 @@
                                 <td>{{ $item->id }}</td>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        <a data-fslightbox href="{{$item->image_url}}">
+                                        <a data-fslightbox="{{$item->id}}" href="{{$item->image_url}}">
                                             <span class="avatar" style="background-image: url({{$item->image_url}})"></span>
                                         </a>
                                         <p style="font-weight: 500" class="m-0">{{ $item->full_title }}</p>

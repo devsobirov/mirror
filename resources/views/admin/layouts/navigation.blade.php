@@ -12,6 +12,17 @@
                 </a>
             </li>
 
+            <li class="nav-item @if(request()->routeIs('offers.*')) active @endif">
+                <a class="nav-link" href="{{ route('offers.index') }}" >
+                    <span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
+                        <x-svg.folder></x-svg.folder>
+                    </span>
+                    <span class="nav-link-title">
+                        Buyurtmalar
+                    </span>
+                </a>
+            </li>
+
             <li class="nav-item dropdown @if(request()->routeIs('admin.*')) active @endif">
                 <a class="nav-link dropdown-toggle" href="#navbar-help" data-bs-toggle="dropdown" data-bs-auto-close="outside" role="button" aria-expanded="true">
                     <span class="nav-link-icon d-md-none d-lg-inline-block"> <x-svg.settings></x-svg.settings></span>

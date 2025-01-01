@@ -20,8 +20,17 @@ class ServiceSaveRequest extends FormRequest
             'status' => 'boolean',
             'unit' => 'required|string|min:0',
             'price' => 'required|numeric|min:0',
-            'margin' => 'required|numeric|min:0',
+            'margin' => 'nullable|numeric|min:0',
             'active' => 'boolean',
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if (!$this->post('margin')) {
+            $this->merge(['margin' => 0]);
+        }
+
+        $this->merge(['active' => !empty($this->post('active'))]);
     }
 }
