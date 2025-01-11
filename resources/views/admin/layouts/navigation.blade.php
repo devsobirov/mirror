@@ -23,6 +23,22 @@
                 </a>
             </li>
 
+            <li class="nav-item dropdown @if(request()->routeIs('finance.*')) active @endif">
+                <a class="nav-link dropdown-toggle" href="#navbar-finance" data-bs-toggle="dropdown" data-bs-auto-close="outside" role="button" aria-expanded="true">
+                    <span class="nav-link-icon d-md-none d-lg-inline-block"> <x-svg.finance></x-svg.finance></span>
+                    <span class="nav-link-title">Moliya</span>
+                </a>
+                <div class="dropdown-menu" data-bs-popper="static">
+                    <a class="dropdown-item @if(request()->routeIs('finance.clients.*')) active @endif" href="{{route('finance.clients.index')}}">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block"><x-svg.client></x-svg.client></span>
+                        <span class="nav-link-title">Mijozlar</span>
+                    </a>
+                    <a class="dropdown-item @if(request()->routeIs('finance.debts.*')) active @endif" href="{{route('finance.debts.index')}}">
+                        <span class="nav-link-icon d-md-none d-lg-inline-block"><x-svg.bills></x-svg.bills></span>
+                        <span class="nav-link-title">Qarzlar</span>
+                    </a>
+                </div>
+            </li>
             <li class="nav-item dropdown @if(request()->routeIs('admin.*')) active @endif">
                 <a class="nav-link dropdown-toggle" href="#navbar-help" data-bs-toggle="dropdown" data-bs-auto-close="outside" role="button" aria-expanded="true">
                     <span class="nav-link-icon d-md-none d-lg-inline-block"> <x-svg.settings></x-svg.settings></span>

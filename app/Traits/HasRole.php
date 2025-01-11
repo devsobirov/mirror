@@ -4,6 +4,10 @@ namespace App\Traits;
 
 trait HasRole
 {
+    public const ADMIN = 99;
+    public const MANAGER = 88;
+    public const WORKER = 66;
+
     public function isAdmin(): bool
     {
         return $this->role == self::ADMIN;

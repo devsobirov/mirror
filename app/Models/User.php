@@ -13,10 +13,6 @@ class User extends Authenticatable
     use HasWarehouses;
     use Notifiable;
 
-    public const ADMIN = 99;
-    public const MANAGER = 88;
-    public const WORKER = 66;
-
     protected $fillable = [
         'name',
         'email',

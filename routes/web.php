@@ -6,6 +6,8 @@ use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\Warehouse\GoodsController;
 use App\Http\Controllers\Admin\Warehouse\SupplierController;
 use App\Http\Controllers\Admin\Warehouse\WarehouseController;
+use App\Http\Controllers\Finance\ClientsController as FClientsController;
+use App\Http\Controllers\Finance\DebtsController;
 use App\Http\Controllers\Service\OffersController;
 use App\Http\Controllers\Warehouse\ExpenseController;
 use App\Http\Controllers\Warehouse\IncomeController;
@@ -41,6 +43,13 @@ Route::middleware(['auth', 'worker'])->group(function () {
     Route::group(['controller' => OffersController::class, 'prefix' => 'offers', 'as' => 'offers.'], function () {
         Route::get('/', 'index')->name('index');
         Route::get('/form', 'form')->name('form');
+    });
+
+    Route::group(['prefix' => 'finance', 'as' => 'finance.'], function () {
+        Route::get('/debts', [DebtsController::class, 'index'])->name('debts.index');
+        Route::post('/debts/create', [DebtsController::class, 'create'])->name('debts.create');
+        Route::get('/clients', [FClientsController::class, 'index'])->name('clients.index');
+        Route::post('/clients/save/{client?}', [FClientsController::class, 'save'])->name('clients.save');
     });
 
     Route::middleware(['auth', 'admin'])->prefix('admin')->as('admin.')->group(function () {

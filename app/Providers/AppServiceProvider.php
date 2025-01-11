@@ -15,8 +15,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        setlocale(LC_TIME, 'uz_UZ.UTF-8');
-        Carbon::setLocale('uz');
+        setlocale(LC_TIME, 'uz_UZ');
+        Carbon::setLocale('ru');
         Paginator::useBootstrapFive();
     }
 }
