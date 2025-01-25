@@ -15,10 +15,10 @@ enum PaymentTypeEnum: int
     public static function list(): array
     {
         return [
-            self::Cash->value => 'Наличные',
-            self::Card->value => 'Карта',
-            self::CardTransfer->value => 'Перевод на карту',
-            self::BankTransfer->value => 'Банковский перевод',
+            self::Cash->value => 'Naqd',
+            self::Card->value => 'Karta (terminal)',
+            self::CardTransfer->value => 'Kartaga o\'tkazma',
+            self::BankTransfer->value => 'Bank o\'tkazmasi',
         ];
     }
 

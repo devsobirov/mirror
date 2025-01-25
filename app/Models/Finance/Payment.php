@@ -19,4 +19,10 @@ class Payment extends Model
     {
         return PaymentTypeEnum::getName($this->type);
     }
+
+    public static function calcLeftPaymentAmount(Debt $debt, int|float $paymentAmount): int|float
+    {
+        $left = $debt->left_amount - $paymentAmount;
+        return max(0, $left);
+    }
 }

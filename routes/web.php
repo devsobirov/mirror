@@ -48,6 +48,7 @@ Route::middleware(['auth', 'worker'])->group(function () {
     Route::group(['prefix' => 'finance', 'as' => 'finance.'], function () {
         Route::get('/debts', [DebtsController::class, 'index'])->name('debts.index');
         Route::post('/debts/create', [DebtsController::class, 'create'])->name('debts.create');
+        Route::post('/debts/pay/{debt}', [DebtsController::class, 'pay'])->name('debts.pay');
         Route::get('/clients', [FClientsController::class, 'index'])->name('clients.index');
         Route::post('/clients/save/{client?}', [FClientsController::class, 'save'])->name('clients.save');
     });

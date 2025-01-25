@@ -14,12 +14,13 @@ return new class extends Migration
             $table->unsignedBigInteger('client_id')->index()->comment('ид клиента');
             $table->integer('amount')->comment('сумма долга');
             $table->timestamp('payment_date')->index()->comment('назначенная дата платежа');
+            $table->timestamp('closed_at')->nullable()->comment('дата фактического закрытия долга');
             $table->tinyInteger('status')
                 ->default(DebtStatusEnum::Pending)
                 ->comment('статус долга');
             $table->string('caption')->nullable()->comment('примечания/комментарий');
             $table->unsignedBigInteger('offer_id')->nullable()->comment('ид заказа, если есть');
-            $table->tinyInteger('rating')->nullable()->comment("Оценка от 1 до 5, после закрытие долга");
+            $table->float('rating', 2, 1)->nullable()->comment("Оценка от 1 до 5, после закрытие долга");
             $table->timestamps();
         });
     }

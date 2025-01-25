@@ -15,6 +15,7 @@ return new class extends Migration
             $table->integer('amount')->comment('сумма платежа');
             $table->integer('type')->comment('способ оплаты');
             $table->integer('left_debt_amount')->comment('остаток долга после платежа');
+            $table->integer('rating')->nullable()->comment('оценка платежа от 1 до 5');
             $table->timestamps();
         });
     }

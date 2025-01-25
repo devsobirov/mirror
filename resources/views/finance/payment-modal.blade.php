@@ -1,5 +1,5 @@
-<div class="modal modal-blur fade" id="debt-{{$item->id}}" tabindex="-1" role="dialog" aria-hidden="true">
-    <form action="{{route('finance.debts.create')}}"
+<div class="modal modal-blur fade" id="payment-{{$item->id}}" tabindex="-1" role="dialog" aria-hidden="true">
+    <form action="{{route('finance.debts.pay', $item)}}"
           class="modal-dialog modal-lg modal-dialog-centered"
           method="POST" role="document"
     >
@@ -7,53 +7,88 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    {{$item->name}} uchun qarz yaratish
+                    Payment modal
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <input type="hidden" name="client_id" value="{{$item->id}}">
-                <div class="row mb-3">
-                    <div class="col-lg-4">
-                        <label class="form-label">Mijoz FIO</label>
-                        <input type="text" disabled value="{{$item->name}}" class="form-control" placeholder="Mijozning ism familiyasi yoki Korxona nomi">
-                    </div>
-                    <div class="col-lg-4">
-                        <label class="form-label">Mijoz raqami</label>
-                        <div class="input-group">
-                            <button type="button" class="btn">+998</button>
-                            <input type="text" disabled value="{{$item->phone_number}}" class="form-control" data-mask="(00) 000-00-00" data-mask-visible="true" placeholder="(99) 000-00-00" autocomplete="off">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="mb-3" x-data="formatAmount()">
+                            <label class="form-label">To'lov summasi</label>
+                            <input type="number" 
+                                max="{{$item->left_amount}}" 
+                                placeholder="To'lov summasi {{number_format($item->left_amount, 0, ',', ' ')}} UZS gacha" 
+                                name="amount" 
+                                class="form-control"
+                                x-model="amount">
+                            <small class="amount-in-words form-text text-muted" x-text="amountInWords"></small>
                         </div>
                     </div>
-                    <div class="col-lg-4">
-                        <label class="form-label">Mijoz raqami (qo'shimcha)</label>
-                        <div class="input-group">
-                            <button type="button" class="btn">+998</button>
-                            <input type="text" disabled value="{{$item->phone_number2}}" class="form-control" data-mask="(00) 000-00-00" data-mask-visible="true" placeholder="(99) 000-00-00" autocomplete="off">
+                    <div class="col-lg-6">
+                        <div class="mb-3">
+                            <label class="form-label">To'lov turi</label>
+                            <select name="type" class="form-select">
+                                <option value="" selected disabled>To'lov turini tanlash</option>
+                                @foreach(\App\Enums\Finance\PaymentTypeEnum::list() as $key => $value)
+                                    <option value="{{$key}}">{{$value}}</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
-                </div>
-
-                <div class="row mb-3">
-                    <div class="col-lg-4">
-                        <label class="form-label">Qarz berilgan sana (kun-oy-yil)</label>
-                        <input type="date" name="created_at" class="form-control" value="{{date('Y-m-d')}}" required>
-                    </div>
-                    <div class="col-lg-4">
-                        <label class="form-label">Qarz qaytarish sanasi (kun-oy-yil)</label>
-                        <input type="date" name="payment_date" class="form-control" value="{{now()->addMonth()->format('Y-m-d')}}" required>
-                    </div>
-                    <div class="col-lg-4">
-                        <label class="form-label">Qarz miqdori</label>
-                        <div class="input-group">
-                            <input type="number" name="amount" class="form-control" min="0">
-                            <button type="button" class="btn">UZS</button>
+                    <div class="col-lg-6">
+                        <div class="mb-3">
+                            <label class="form-label">To'lov sanasi</label>
+                            <input type="date" 
+                                name="payment_date" 
+                                value="{{date('Y-m-d')}}"
+                                class="form-control">
                         </div>
                     </div>
-                </div>
-                <div class="col-lg-12">
-                    <label class="form-label">Izoh</label>
-                    <textarea class="form-control" rows="2" name="caption" maxlength="255"></textarea>
+                    <div class="col-lg-12">
+                        <div class="mb-3">
+                            <label class="form-label required">To'lov reytingi</label>
+                            <div x-data="ratingData()">
+                                <div class="form-selectgroup form-selectgroup-rating">
+                                    <label class="form-selectgroup-item">
+                                        <input type="radio" name="rating" value="1" class="form-selectgroup-input rating-input" required @click="setRating(1)">
+                                        <span class="form-selectgroup-label rating-star" data-rating="1" :style="{ color: getColor(1) }">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-filled" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z" /></svg>
+                                        </span>
+                                    </label>
+                                    <label class="form-selectgroup-item">
+                                        <input type="radio" name="rating" value="2" class="form-selectgroup-input rating-input" required @click="setRating(2)">
+                                        <span class="form-selectgroup-label rating-star" data-rating="2" :style="{ color: getColor(2) }">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-filled" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z" /></svg>
+                                        </span>
+                                    </label>
+                                    <label class="form-selectgroup-item">
+                                        <input type="radio" name="rating" value="3" class="form-selectgroup-input rating-input" required @click="setRating(3)">
+                                        <span class="form-selectgroup-label rating-star" data-rating="3" :style="{ color: getColor(3) }">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-filled" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z" /></svg>
+                                        </span>
+                                    </label>
+                                    <label class="form-selectgroup-item">
+                                        <input type="radio" name="rating" value="4" class="form-selectgroup-input rating-input" required @click="setRating(4)">
+                                        <span class="form-selectgroup-label rating-star" data-rating="4" :style="{ color: getColor(4) }">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-filled" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z" /></svg>
+                                        </span>
+                                    </label>
+                                    <label class="form-selectgroup-item">
+                                        <input type="radio" name="rating" value="5" class="form-selectgroup-input rating-input" required @click="setRating(5)">
+                                        <span class="form-selectgroup-label rating-star" data-rating="5" :style="{ color: getColor(5) }">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-filled" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z" /></svg>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                            <small class="form-hint">
+                                To'lovni baholash uchun yulduzlarni tanlang. 1 - juda yomon (to'lov kechikkan), 5 - a'lo (o'z vaqtida to'langan)
+                            </small>
+                        </div>
+                    </div>
+                    <input type="hidden" name="client_id" value="{{$item->client_id}}">
+                    <input type="hidden" name="debt_id" value="{{$item->id}}">
                 </div>
             </div>
             <div class="modal-footer">

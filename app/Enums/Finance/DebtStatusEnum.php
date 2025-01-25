@@ -14,9 +14,9 @@ enum DebtStatusEnum: int
     public static function list(): array
     {
         return [
-            self::Pending->value => 'Ожидание',
-            self::Paid->value => 'Оплачено',
-            self::Cancelled->value => 'Отменено',
+            self::Pending->value => 'Jarayonda',
+            self::Paid->value => 'To\'langan',
+            self::Cancelled->value => 'Bekor qilingan',
         ];
     }
 
@@ -25,6 +25,6 @@ enum DebtStatusEnum: int
      */
     public static function getName(int $status): string
     {
-        return self::list()[$status] ?? 'Неизвестный статус';
+        return self::list()[$status] ?? 'No\'ma\'lum status';
     }
 }
