@@ -15,6 +15,7 @@ class DebtService
      */
     public static function checkDebtFullyPaid(Debt $debt): bool
     {
+        \Log::info(__METHOD__, [$debt->paid_amount, $debt->amount]);
         return $debt->paid_amount >= $debt->amount;
     }
 

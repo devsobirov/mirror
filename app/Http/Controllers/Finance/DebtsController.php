@@ -33,6 +33,7 @@ class DebtsController extends Controller
     public function pay(PaymentCreateRequest $request, Debt $debt)
     {
         Payment::create($request->validated());
+        $debt->load('payments');
         DebtService::updateDebtStatus($debt);
         return redirect()->back()->with('success', 'Muvaffaqiyatli saqlandi');
     }
