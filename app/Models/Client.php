@@ -25,4 +25,9 @@ class Client extends Model
     {
         return $this->hasMany(Payment::class, 'client_id', 'id');
     }
+
+    public function withRating(Builder $query)
+    {
+        $query->withAvg('debts as rating', 'rating');
+    }
 }

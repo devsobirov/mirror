@@ -35,6 +35,7 @@ class DebtsController extends Controller
         Payment::create($request->validated());
         $debt->load('payments');
         DebtService::updateDebtStatus($debt);
+        DebtService::updateDebtRating($debt);
         return redirect()->back()->with('success', 'Muvaffaqiyatli saqlandi');
     }
 }

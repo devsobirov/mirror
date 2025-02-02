@@ -50,6 +50,7 @@ Route::middleware(['auth', 'worker'])->group(function () {
         Route::post('/debts/create', [DebtsController::class, 'create'])->name('debts.create');
         Route::post('/debts/pay/{debt}', [DebtsController::class, 'pay'])->name('debts.pay');
         Route::get('/clients', [FClientsController::class, 'index'])->name('clients.index');
+        Route::get('/clients/{client}', [FClientsController::class, 'show'])->name('clients.show');
         Route::post('/clients/save/{client?}', [FClientsController::class, 'save'])->name('clients.save');
     });
 

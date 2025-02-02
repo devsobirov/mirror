@@ -34,7 +34,7 @@ class DebtService
         return $debt->status;
     }
 
-    public static function updateDebtRating(Debt $debt, int $rating): ?float
+    public static function updateDebtRating(Debt $debt): ?float
     {
         $avg = $debt->payments->where('rating', '>', 0)->avg('rating');
         if ($avg) {

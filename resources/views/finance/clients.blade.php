@@ -35,15 +35,17 @@
                         @forelse($items as $item)
                             <tr>
                                 <td>
-                                    {{$item->name}}
-                                    <p class="mb-0 text-secondary">{{$item->address}}</p>
+                                    <a href="{{route('finance.clients.show', $item)}}">
+                                        {{$item->name}}
+                                        <p class="mb-0 text-secondary">{{$item->address}}</p>
+                                    </a>
                                 </td>
                                 <td>
                                     <p class="mb-1">Tel : {{$item->phone_number ?? '-'}}</p>
                                     <p class="mb-1">Tel2: {{$item->phone_number2 ?? '-'}}</p>
                                 </td>
                                 <td>{{$item->debt ? (number_format($item->debt) ." UZS") : "Yo'q"}}</td>
-                                <td>{{$item->rating ?: '-'}}</td>
+                                <td><x-rating :rating="$item->rating"></x-rating></td>
                                 <td>
                                     <a href="#" class="btn btn-icon btn-azure" title="Buyurtma yaratish"
                                        data-bs-target="#client-{{$item->id}}" data-bs-toggle="modal">

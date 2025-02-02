@@ -21,6 +21,13 @@ class ClientsController extends Controller
         return view('finance.clients', compact('items'));
     }
 
+    public function show(Client $client)
+    {
+        $debts = $client->debts()->orderBy('payment_date', 'desc')->with('payments')->get();
+        $debts->map(fn($debt) => $debt->debt = $debt->debt_sum - $debt->paid_sum);
+        return view('finance.client', compact('client', 'debts'));
+    }
+
     public function save(ClientSaveRequest $request, Client $client)
     {
         $client->fill($request->validated());
