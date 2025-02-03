@@ -10,7 +10,9 @@ class Service extends Model
 {
     public $table = 'services';
     protected $guarded = [];
+    protected $appends = ['full_price'];
     public const IMAGE_PATH = 'assets/images/services';
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(ServiceCategory::class, 'category_id', 'id');
@@ -19,6 +21,14 @@ class Service extends Model
     public function scopeSearch(Builder $query, ?string $search = '')
     {
         $query->when(!empty($search), fn($q) => $q->where('name', 'like', '%' . mb_strtolower(trim($search)) . '%'));
+    }
+
+    public function getFullPriceAttribute(): float
+    {
+        if ($this->margin) {
+            return $this->price + ($this->price * $this->margin / 100);
+        }
+        return $this->price;
     }
 
     public function scopeByCategory(Builder $query, ?int $category_id = null)
