@@ -1,0 +1,352 @@
+@extends('admin.layouts.app')
+
+@section('content')
+    <div class="container-xl">
+        <!-- Page title -->
+        <div class="page-header d-print-none">
+            <h2 class="page-title">
+                Заказы ({{$offers->total()}})
+            </h2>
+            <div class="col-auto ms-auto d-print-none">
+                <form action="{{ route('offers.index') }}" class="d-md-flex d-sm-block align-items-center gap-1">
+                    <input type="date" class="form-control d-inline-block w-12 me-1" name="date_from" value="{{ request('date_from') }}">
+                    <input type="date" class="form-control d-inline-block w-12 me-1" name="date_to" value="{{ request('date_to') }}">
+                    <select class="form-select d-inline-block w-12 me-1" name="status">
+                        <option value="">Все статусы</option>
+                        @foreach(\App\Enums\Offer\OfferStatusEnum::list() as $value => $label)
+                            <option value="{{ $value }}" @selected(request('status') == $value)>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <input type="search" class="form-control d-inline-block w-12 me-1" minlength="2" 
+                           placeholder="Поиск..." name="search" value="{{ request('search') }}">
+                    <button class="btn me-1 btn-icon btn-azure" title="Поиск">
+                        <x-svg.search></x-svg.search>
+                    </button>
+                    <a href="{{ route('offers.form') }}" class="btn btn-primary">
+                        Создать заказ
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-body">
+        <div class="container-xl">
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table" id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Клиент</th>
+                                <th>Телефон</th>
+                                <th>Сумма</th>
+                                <th>Скидка</th>
+                                <th>Статус</th>
+                                <th>Менеджер</th>
+                                <th>Дата</th>
+                                <th class="w-1"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($offers as $offer)
+                                <tr>
+                                    <td>{{ $offer->id }}</td>
+                                    <td>{{ $offer->client_name }}</td>
+                                    <td>
+                                        {{ $offer->phone_number }}
+                                        @if($offer->phone_number2)
+                                            <br>
+                                            <small class="text-muted">{{ $offer->phone_number2 }}</small>
+                                        @endif
+                                    </td>
+                                    <td>{{ $offer->cost }}</td>
+                                    <td>{{ $offer->discount }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ $offer->status_color }}">
+                                            {{ $offer->status_name }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if($offer->manager)
+                                            {{ $offer->manager['name'] }}
+                                        @else
+                                            <span class="text-muted">Не назначен</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ $offer->created_at }}</td>
+                                    <td>
+                                        <div class="btn-list flex-nowrap">
+                                            <a href="#" class="btn btn-icon" title="Просмотр заказа"
+                                               onclick="showOfferDetails({{ $offer->id }})"
+                                               data-bs-toggle="modal" 
+                                               data-bs-target="#modal-offer-details">
+                                                <x-svg.eye></x-svg.eye>
+                                            </a>
+                                            <a href="#" class="btn btn-icon" title="Копировать">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                    <rect x="8" y="8" width="12" height="12" rx="2" />
+                                                    <path d="M16 8v-2a2 2 0 0 0 -2 -2h-8a2 2 0 0 0 -2 2v8a2 2 0 0 0 2 2h2" />
+                                                </svg>
+                                            </a>
+                                            <a href="#" 
+                                               class="btn btn-icon" 
+                                               title="Редактировать статус"
+                                               onclick="editStatus({{ $offer->id }}, {{ $offer->status }})"
+                                               data-bs-toggle="modal" 
+                                               data-bs-target="#modal-edit-status">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-edit" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                                    <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"></path>
+                                                    <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"></path>
+                                                    <path d="M16 5l3 3"></path>
+                                                </svg>
+                                            </a>
+                                            @if(!$offer->status || $offer->status === \App\Enums\Offer\OfferStatusEnum::Draft->value)
+                                                <a href="#" 
+                                                   class="btn btn-icon" 
+                                                   title="Удалить"
+                                                   onclick="deleteOffer({{ $offer->id }})">
+
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-trash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <line x1="4" y1="7" x2="20" y2="7" />
+                                                        <line x1="10" y1="11" x2="10" y2="17" />
+                                                        <line x1="14" y1="11" x2="14" y2="17" />
+                                                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
+                                                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
+                                                    </svg>
+                                                </a>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="9" class="text-center">Заказы не найдены</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                @if($offers->hasPages())
+                    <div class="card-footer pb-0">
+                        {{ $offers->links() }}
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно редактирования статуса -->
+    <div class="modal modal-blur fade" id="modal-edit-status" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Изменить статус заказа</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Статус</label>
+                        <select class="form-select" id="status-select">
+                            @foreach(\App\Enums\Offer\OfferStatusEnum::list() as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn me-auto" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary" id="save-status">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно просмотра заказа -->
+    <div class="modal modal-blur fade" id="modal-offer-details" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Детали заказа #<span id="offer-number"></span></h5>
+                    <div class="ms-auto">
+                        <a href="#" class="btn btn-icon" title="Печать" id="print-offer">
+                            <x-svg.printer></x-svg.printer>
+                        </a>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-lg-6">
+                            <p class="mb-1"><strong>Клиент:</strong> <span id="client-name"></span></p>
+                            <p class="mb-1"><strong>Телефон:</strong> <span id="phone_number"></span></p>
+                            <p class="mb-1"><strong>Доп. телефон:</strong> <span id="phone_number2"></span></p>
+                            <p class="mb-1"><strong>Комментарий:</strong> <span id="client-comment"></span></p>
+                        </div>
+                        <div class="col-lg-6 text-end">
+                            <p class="mb-1"><strong>Дата:</strong> <span id="order-date"></span></p>
+                            <p class="mb-1"><strong>Статус:</strong> <span id="order-status"></span></p>
+                            <p class="mb-1"><strong>Менеджер:</strong> <span id="order-manager"></span></p>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-vcenter" id="services-table">
+                            <thead>
+                                <tr>
+                                    <th>Услуга</th>
+                                    <th>Ед. изм.</th>
+                                    <th class="text-end">Кол-во</th>
+                                    <th class="text-end">Цена</th>
+                                    <th class="text-end">Сумма</th>
+                                </tr>
+                            </thead>
+                            <tbody id="services-list"></tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="4" class="text-end"><strong>Итого:</strong></td>
+                                    <td class="text-end" id="total-cost"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4" class="text-end"><strong>Скидка:</strong></td>
+                                    <td class="text-end" id="discount-amount"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4" class="text-end"><strong>К оплате:</strong></td>
+                                    <td class="text-end" id="final-cost"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+
+@section('custom_scripts')
+<script>
+    let currentOfferId = null;
+
+    function editStatus(offerId, currentStatus) {
+        currentOfferId = offerId;
+        document.getElementById('status-select').value = currentStatus;
+    }
+
+    document.getElementById('save-status').addEventListener('click', async function() {
+        if (!currentOfferId) return;
+
+        try {
+            const response = await fetch(`/offers/${currentOfferId}/update-status`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    status: document.getElementById('status-select').value
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                window.location.reload();
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Произошла ошибка при обновлении статуса');
+        }
+    });
+
+    function deleteOffer(offerId) {
+        if (!confirm('Вы уверены, что хотите удалить этот заказ?')) return;
+
+        fetch(`/offers/${offerId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                window.location.reload();
+            } else {
+                alert(result.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка при удалении заказа');
+        });
+    }
+
+    async function showOfferDetails(offerId) {
+        try {
+            const response = await fetch(`/offers/${offerId}`, {
+                headers: {
+                    'Accept': 'application/json',
+                }
+            });
+            
+            const data = await response.json();
+            const offer = data.data;
+
+            // Заполняем основные данные
+            document.getElementById('offer-number').textContent = offer.id;
+            document.getElementById('client-name').textContent = offer.client_name || '-';
+            document.getElementById('phone_number').textContent = offer.phone_number || '-';
+            document.getElementById('phone_number2').textContent = offer.phone_number2 || '-';
+            document.getElementById('client-comment').textContent = offer.comment || '-';
+            document.getElementById('order-date').textContent = offer.created_at || '-';
+            document.getElementById('order-status').textContent = offer.status_name || '-';
+            document.getElementById('order-manager').textContent = offer.manager?.name || 'Не назначен';
+            
+            // Заполняем таблицу услуг
+            const servicesList = document.getElementById('services-list');
+            servicesList.innerHTML = '';
+            
+            offer.offer_items?.forEach(item => {
+                const row = `
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                ${item.service_image ? `<span class="avatar me-2" style="background-image: url(${item.service_image})"></span>` : ''}
+                                ${item.service_name}
+                            </div>
+                        </td>
+                        <td>${item.unit || '-'}</td>
+                        <td class="text-end">${item.quantity}</td>
+                        <td class="text-end">
+                            ${item.has_discount 
+                                ? `<s class="text-muted">${item.original_price}</s><br>${item.price}`
+                                : item.price
+                            }
+                        </td>
+                        <td class="text-end">${item.total}</td>
+                    </tr>
+                `;
+                servicesList.innerHTML += row;
+            });
+
+            // Заполняем итоги (используем готовые отформатированные значения из ресурса)
+            document.getElementById('total-cost').textContent = offer.cost;
+            document.getElementById('discount-amount').textContent = offer.discount_amount;
+            document.getElementById('final-cost').textContent = offer.final_cost;
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Ошибка при загрузке данных заказа');
+        }
+    }
+</script>
+@endsection 

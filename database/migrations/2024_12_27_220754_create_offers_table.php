@@ -10,11 +10,16 @@ return new class extends Migration
     {
         Schema::create('offers', function (Blueprint $table) {
             $table->id();
-            $table->integer('cost')->default(0)->comment("Сумма заказа");
+            $table->float('cost')->default(0)->comment("Сумма заказа");
             $table->integer('status')->nullable()->comment("Статус заказа");
-            $table->integer('discount_amount')->nullable()->comment("Кол. скидки");
+            $table->integer('discount')->nullable()->comment("Кол. скидки");
 
             $table->unsignedBigInteger('client_id')->nullable();
+            $table->unsignedBigInteger('manager_id')->nullable();
+
+            $table->string('client_name');
+            $table->string('phone');
+            $table->string('phone2')->nullable();
             $table->string('comment')->nullable();
             $table->timestamps();
         });

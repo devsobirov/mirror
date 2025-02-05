@@ -17,6 +17,6 @@ class OfferItem extends Model
 
     public function service(): BelongsTo
     {
-        return $this->belongsTo(Service::class, 'service_id')->with('service_category');
+        return $this->belongsTo(Service::class, 'service_id')->with('category');
     }
 }

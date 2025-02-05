@@ -43,6 +43,10 @@ Route::middleware(['auth', 'worker'])->group(function () {
     Route::group(['controller' => OffersController::class, 'prefix' => 'offers', 'as' => 'offers.'], function () {
         Route::get('/', 'index')->name('index');
         Route::get('/form', 'form')->name('form');
+        Route::post('/save', 'save')->name('save');
+        Route::get('/{offer}', 'show')->name('show');
+        Route::put('/{offer}/update-status', 'updateStatus')->name('update-status');
+        Route::delete('/{offer}', 'destroy')->name('destroy');
     });
 
     Route::group(['prefix' => 'finance', 'as' => 'finance.'], function () {
