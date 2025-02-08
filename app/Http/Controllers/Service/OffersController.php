@@ -23,26 +23,18 @@ class OffersController extends Controller
         $this->offerService = $offerService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $offers = Offer::query()
-            ->with(['offerItems.service', 'manager'])
-            ->search(request('search'))
-            ->dateFrom(request('date_from'))
-            ->dateTo(request('date_to'))
-            ->byStatus(request('status'))
-            ->latest('id')
-            ->paginate(20)
-            ->withQueryString();
+            ->with(['manager'])
+            ->search($request->get('search'))
+            ->dateFrom($request->get('date_from'))
+            ->dateTo($request->get('date_to'))
+            ->byStatus($request->get('status'))
+            ->latest()
+            ->paginate(25);
 
-        if (request()->wantsJson()) {
-            return OfferResource::collection($offers);
-        }
-        
-        return view('services.offers.offers', [
-            'offers' => OfferResource::collection($offers),
-            'statuses' => OfferStatusEnum::list()
-        ]);
+        return view('services.offers.offers', compact('offers'));
     }
 
     public function form()
