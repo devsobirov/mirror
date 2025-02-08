@@ -442,7 +442,7 @@
 
             updateQuantity(id, quantity) {
                 console.log('updateQuantity:', id, quantity);
-                const numQuantity = parseInt(quantity);
+                const numQuantity = parseFloat(quantity);
                 if (numQuantity <= 0) {
                     this.removeItem(id);
                     return;
@@ -475,7 +475,7 @@
             saveCustomPrice(id, value) {
                 const item = this.offerItems.find(item => item.id === id);
                 if (item) {
-                    const newPrice = parseInt(value);
+                    const newPrice = parseFloat(value);
                     if (newPrice && newPrice > 0) {
                         item.custom_price = newPrice;
                     } else {
@@ -495,7 +495,7 @@
             getItemTotal(item) {
                 if (!item) return 0;
                 const price = item.custom_price || item.full_price;
-                return price * (item.quantity || 1);
+                return parseFloat((price * (item.quantity || 1)).toFixed(2));
             },
 
             getTotalSum() {
