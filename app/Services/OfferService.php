@@ -9,6 +9,9 @@ class OfferService
 {
     public function save(array $data): Offer
     {
+        // Добавляем ID менеджера к данным
+        $data['manager_id'] = auth()->id();
+        
         // Подготавливаем данные заказа
         $offerData = [
             'client_name' => $data['client_name'],
@@ -16,7 +19,8 @@ class OfferService
             'phone2' => $data['phone2'],
             'comment' => $data['comment'],
             'status' => $data['status'] ?? OfferStatusEnum::Draft->value,
-            'discount' => $data['discount'],
+            'discount' => $data['discount'] ?? 0,
+            'manager_id' => $data['manager_id'],
         ];
 
         // Рассчитываем общую стоимость и скидку
@@ -25,7 +29,6 @@ class OfferService
         });
 
         // Добавляем рассчитанные поля
-        $offerData['discount'] = $data['discount'];
         $offerData['cost'] = $totalCost - $data['discount'];
 
         // Создаем заказ

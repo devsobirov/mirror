@@ -34,7 +34,7 @@ class OffersController extends Controller
             ->latest()
             ->paginate(25);
 
-        return view('services.offers.offers', compact('offers'));
+        return view('services.offers', compact('offers'));
     }
 
     public function form()
@@ -112,5 +112,32 @@ class OffersController extends Controller
         $offer->load(['offerItems.service', 'manager']);
         
         return new OfferResource($offer);
+    }
+
+    public function copy(Offer $offer)
+    {
+        $offer->load(['offerItems.service']);
+        
+        // Подготавливаем данные для формы
+        $categories = CategoryWithServicesResource::collection(Category::with(['services'])->get());
+        
+        // Подготовим начальные данные для Alpine.js
+        $initialData = [
+            'offerItems' => $offer->offerItems->map(function($item) {
+                return [
+                    'id' => $item->service->id,
+                    'name' => $item->service->name,
+                    'unit' => $item->service->unit,
+                    'image' => $item->service->image_url,
+                    'full_price' => $item->service->full_price,
+                    'custom_price' => $item->price != $item->original_price ? $item->price : null,
+                    'isEditingPrice' => false,
+                    'quantity' => $item->quantity
+                ];
+            }),
+            'discount' => $offer->discount
+        ];
+
+        return view('services.offer-copy-form', compact('categories', 'initialData'));
     }
 }

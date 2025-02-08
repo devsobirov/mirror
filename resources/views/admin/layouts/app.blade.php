@@ -90,5 +90,10 @@
 <!-- Page level custom scripts -->
 @yield('custom_scripts')
 
+@stack('modals')
+
+<!-- Scripts -->
+@stack('scripts')
+
 </body>
 </html>

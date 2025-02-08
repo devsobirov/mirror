@@ -47,6 +47,7 @@ Route::middleware(['auth', 'worker'])->group(function () {
         Route::get('/{offer}', 'show')->name('show');
         Route::put('/{offer}/update-status', 'updateStatus')->name('update-status');
         Route::delete('/{offer}', 'destroy')->name('destroy');
+        Route::get('/copy/{offer}', 'copy')->name('copy');
     });
 
     Route::group(['prefix' => 'finance', 'as' => 'finance.'], function () {
