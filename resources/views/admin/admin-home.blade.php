@@ -147,43 +147,28 @@
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">Статистика долгов</h3>
-                <div class="card-actions d-flex align-items-center">
-                    <!-- Период -->
-                    <div class="btn-group">
-                        <button type="button" class="btn" data-bs-toggle="dropdown">
-                            <i class="fas fa-calendar me-2"></i>Период
-                        </button>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item" href="#" data-debt-period="today">Сегодня</a>
-                            <a class="dropdown-item" href="#" data-debt-period="week">Неделя</a>
-                            <a class="dropdown-item" href="#" data-debt-period="month">Месяц</a>
-                            <a class="dropdown-item" href="#" data-debt-period="custom">Выбрать период</a>
-                        </div>
-                    </div>
-                    
-                    <!-- Датапикеры для долгов (изначально скрыты) -->
-                    <div class="btn-group ms-2" id="debt-date-range-picker" style="display: none;">
-                        <input type="date" class="form-control form-control-sm" id="debt-start-date">
-                        <span class="mx-1">-</span>
-                        <input type="date" class="form-control form-control-sm" id="debt-end-date">
-                    </div>
+                <div class="card-actions">
+                    <form id="debts-filter" class="d-flex gap-2 align-items-center">
+                        <!-- Период -->
+                        <select class="form-select w-auto" name="period" id="debt-period">
+                            <option value="week" selected>За неделю</option>
+                            <option value="month">За месяц</option>
+                            <option value="months">По месяцам</option>
+                            <option value="years">По годам</option>
+                        </select>
 
-                    <!-- Тип оплаты -->
-                    <div class="btn-group ms-2">
-                        <button type="button" class="btn" data-bs-toggle="dropdown">
-                            <i class="fas fa-credit-card me-2"></i>Тип оплаты
-                        </button>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item" href="#">Все типы</a>
-                            <a class="dropdown-item" href="#">Наличные</a>
-                            <a class="dropdown-item" href="#">Безналичные</a>
-                        </div>
-                    </div>
+                        <!-- Тип оплаты -->
+                        <select class="form-select w-auto" name="payment_type" id="payment-type">
+                            <option value="all">Все типы оплат</option>
+                            @foreach(\App\Enums\Finance\PaymentTypeEnum::list() as $value => $name)
+                                <option value="{{ $value }}">{{ $name }}</option>
+                            @endforeach
+                        </select>
 
-                    <!-- Кнопка применить -->
-                    <button type="button" class="btn btn-primary ms-2" id="apply-debts-filters">
-                        <i class="fas fa-check me-2"></i>Применить
-                    </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check me-2"></i>Применить
+                        </button>
+                    </form>
                 </div>
             </div>
             <div class="card-body">
@@ -198,8 +183,8 @@
                                         </span>
                                     </div>
                                     <div class="col">
-                                        <div class="font-weight-medium">
-                                            850,000 ₸
+                                        <div class="font-weight-medium" id="debts-given">
+                                            {{ number_format($debtsStatistics['debts_given'], 0, ',', ' ') }} UZS
                                         </div>
                                         <div class="text-muted">
                                             Выдано в долг
@@ -219,8 +204,8 @@
                                         </span>
                                     </div>
                                     <div class="col">
-                                        <div class="font-weight-medium">
-                                            650,000 ₸
+                                        <div class="font-weight-medium" id="payments-received">
+                                            {{ number_format($debtsStatistics['payments_received'], 0, ',', ' ') }} UZS
                                         </div>
                                         <div class="text-muted">
                                             Получено платежей
@@ -240,8 +225,8 @@
                                         </span>
                                     </div>
                                     <div class="col">
-                                        <div class="font-weight-medium">
-                                            200,000 ₸
+                                        <div class="font-weight-medium" id="left-to-collect">
+                                            {{ number_format($debtsStatistics['left_to_collect'], 0, ',', ' ') }} UZS
                                         </div>
                                         <div class="text-muted">
                                             Осталось собрать
@@ -261,8 +246,8 @@
                                         </span>
                                     </div>
                                     <div class="col">
-                                        <div class="font-weight-medium">
-                                            45
+                                        <div class="font-weight-medium" id="debtors-count">
+                                            {{ $debtsStatistics['debtors_count'] }}
                                         </div>
                                         <div class="text-muted">
                                             Должников
@@ -359,6 +344,66 @@
 
     var offersChart = new ApexCharts(document.querySelector("#chart-offers"), offersOptions);
     offersChart.render();
+
+    // Инициализация графика долгов
+    var debtsOptions = {
+        series: [{
+            name: 'Выдано в долг',
+            data: [850000, 650000, 450000, 300000, 200000, 150000, 100000]
+        }, {
+            name: 'Получено платежей',
+            data: [750000, 550000, 350000, 250000, 150000, 100000, 50000]
+        }],
+        chart: {
+            type: 'bar',
+            height: 300,
+            toolbar: {
+                show: false
+            }
+        },
+        plotOptions: {
+            bar: {
+                horizontal: false,
+                columnWidth: '55%',
+                endingShape: 'rounded'
+            },
+        },
+        dataLabels: {
+            enabled: false
+        },
+        stroke: {
+            show: true,
+            width: 2,
+            colors: ['transparent']
+        },
+        xaxis: {
+            categories: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+        },
+        yaxis: {
+            title: {
+                text: 'Сумма (UZS)'
+            },
+            labels: {
+                formatter: function(val) {
+                    return Math.round(val).toLocaleString('ru-RU') + ' UZS'
+                }
+            }
+        },
+        fill: {
+            opacity: 1
+        },
+        tooltip: {
+            y: {
+                formatter: function(val) {
+                    return Math.round(val).toLocaleString('ru-RU') + ' UZS'
+                }
+            }
+        },
+        colors: ['#e74c3c', '#2ecc71'] // Красный для долгов, зеленый для платежей
+    };
+
+    var debtsChart = new ApexCharts(document.querySelector("#chart-debts"), debtsOptions);
+    debtsChart.render();
 
     // Обработчик фильтров статистики
     document.addEventListener('DOMContentLoaded', function() {
@@ -544,6 +589,76 @@
             categoryId,
             period
         );
+    });
+
+    // Обработчик фильтров долгов
+    document.getElementById('debts-filter')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const period = document.getElementById('debt-period').value;
+        const paymentType = document.getElementById('payment-type').value;
+        
+        let startDate, endDate;
+        const now = moment();
+        
+        switch(period) {
+            case 'week':
+                startDate = now.clone().subtract(6, 'days');
+                endDate = now;
+                break;
+            case 'month':
+                startDate = now.clone().subtract(29, 'days');
+                endDate = now;
+                break;
+            case 'months':
+                startDate = now.clone().subtract(11, 'months').startOf('month');
+                endDate = now.endOf('month');
+                break;
+            case 'years':
+                startDate = now.clone().subtract(5, 'years').startOf('year');
+                endDate = now.endOf('year');
+                break;
+        }
+
+        // Отправляем запрос на новый роут
+        axios.post('/admin/debts-data', {
+            start_date: startDate.format('YYYY-MM-DD'),
+            end_date: endDate.format('YYYY-MM-DD'),
+            period: period,
+            payment_type: paymentType !== 'all' ? paymentType : null
+        })
+
+        .then(response => {
+            const data = response.data;
+            
+            // Обновляем график
+            debtsChart.updateOptions({
+                xaxis: {
+                    categories: data.chartData.categories
+                }
+            });
+            
+            debtsChart.updateSeries([{
+                name: 'Выдано в долг',
+                data: data.chartData.debts
+            }, {
+                name: 'Получено платежей',
+                data: data.chartData.payments
+            }]);
+
+            // Обновляем статистику
+            document.getElementById('debts-given').textContent = 
+                Number(data.statistics.debts_given).toLocaleString('ru-RU') + ' UZS';
+            document.getElementById('payments-received').textContent = 
+                Number(data.statistics.payments_received).toLocaleString('ru-RU') + ' UZS';
+            document.getElementById('left-to-collect').textContent = 
+                Number(data.statistics.left_to_collect).toLocaleString('ru-RU') + ' UZS';
+            document.getElementById('debtors-count').textContent = 
+                data.statistics.debtors_count;
+        })
+        .catch(error => {
+            console.error('Ошибка при получении данных:', error);
+        });
     });
 </script>
 @endsection
