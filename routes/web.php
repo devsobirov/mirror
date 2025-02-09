@@ -60,6 +60,10 @@ Route::middleware(['auth', 'worker'])->group(function () {
     });
 
     Route::middleware(['auth', 'admin'])->prefix('admin')->as('admin.')->group(function () {
+        Route::get('/', [App\Http\Controllers\HomeController::class, 'adminHome'])->name('home');
+        Route::post('/chart-data', [App\Http\Controllers\HomeController::class, 'getChartData'])->name('chart.data');
+        Route::post('/statistics-data', [App\Http\Controllers\HomeController::class, 'getStatisticsData'])->name('statistics.data');
+
         Route::get('users', [UsersController::class, 'index'])->name('users.index');
         Route::post('users/{user?}', [UsersController::class, 'save'])->name('users.save');
 
