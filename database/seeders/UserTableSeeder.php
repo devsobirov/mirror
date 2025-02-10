@@ -20,9 +20,9 @@ class UserTableSeeder extends Seeder
                 'password' => Hash::make('secret')
             ]);
         }
-        if (!DB::table('users')->where('phone', '999999999')->exists()) {
+        if (!DB::table('users')->where('phone', '939443555')->exists()) {
             User::create([
-                'phone' => '999999999',
+                'phone' => '939443555',
                 'email' => null,
                 'name' => 'Direktor',
                 'role' => User::ADMIN,

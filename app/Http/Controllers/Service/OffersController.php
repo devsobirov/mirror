@@ -43,6 +43,7 @@ class OffersController extends Controller
         $categories = Category::query()
             ->with(['services' => fn($q) => $q->where('active', true)])
             ->whereHas('services')
+            ->orderBy('id')
             ->get();
 
         $categories = CategoryWithServicesResource::collection($categories);
