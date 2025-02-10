@@ -26,59 +26,7 @@ class HomeController extends Controller
             return $this->adminHome($request);
         }
 
-        $period = $request->input('period', 'today');
-        $startDate = null;
-        $endDate = null;
-
-        switch ($period) {
-            case 'today':
-                $startDate = Carbon::today();
-                $endDate = Carbon::today();
-                break;
-            case 'week':
-                $startDate = Carbon::now()->startOfWeek();
-                $endDate = Carbon::now()->endOfWeek();
-                break;
-            case 'month':
-                $startDate = Carbon::now()->startOfMonth();
-                $endDate = Carbon::now()->endOfMonth();
-                break;
-            case 'custom':
-                $startDate = $request->input('start_date') ? Carbon::parse($request->input('start_date')) : null;
-                $endDate = $request->input('end_date') ? Carbon::parse($request->input('end_date')) : null;
-
-                if (!$startDate || !$endDate)
-                {
-                    $startDate = Carbon::today();
-                    $endDate = Carbon::today();
-                }
-
-                break;
-        }
-        $startDateString = $startDate->toDateString();
-        $endDateString = $endDate->toDateString();
-
-        $offerStats = Offer::query()
-            ->where('status', '!=', OfferStatusEnum::Draft->value)
-            ->whereDate('created_at', '>=', $startDateString)
-            ->whereDate('created_at', '<=', $endDateString)
-            ->selectRaw('SUM(cost) as total_income, COUNT(*) as offers_count')
-            ->first();
-
-        $income = $offerStats->total_income ?? 0;
-        $offersCount = $offerStats->offers_count ?? 0;
-
-        $debtsGiven = Debt::query()
-            ->whereDate('created_at', '>=', $startDateString)
-            ->whereDate('created_at', '<=', $endDateString)
-            ->sum('amount');
-
-        $paymentsReceived = Payment::query()
-            ->whereDate('created_at', '>=', $startDateString)
-            ->whereDate('created_at', '<=', $endDateString)
-            ->sum('amount');
-
-        return view('home', compact('income', 'debtsGiven', 'paymentsReceived', 'offersCount'));
+        return $this->workerHome($request);
     }
 
     
@@ -114,6 +62,37 @@ class HomeController extends Controller
         ]);
     }
 
+    public function workerHome()
+    {
+        // Получаем 10 последних заказов
+        $latestOffers = Offer::query()
+            ->with(['offerItems.service', 'manager'])
+            ->where('status', '!=', OfferStatusEnum::Draft->value)
+            ->latest()
+            ->limit(10)
+            ->get();
+
+        // Получаем долги с сегодняшней датой выплаты
+        $todayDebts = Debt::query()
+            ->with(['payments'])
+            ->whereDate('payment_date', Carbon::today())
+            ->get();
+
+        // Считаем общую сумму сегодняшних долгов
+        $todayDebtsTotal = $todayDebts->sum('amount');
+        
+        // Считаем общую сумму оплат по сегодняшним долгам
+        $todayDebtsReceived = $todayDebts->sum(function ($debt) {
+            return $debt->payments->sum('amount');
+        });
+
+        return view('admin.worker-home', compact(
+            'latestOffers',
+            'todayDebts',
+            'todayDebtsTotal',
+            'todayDebtsReceived'
+        ));
+    }
     
     public function getChartData(Request $request)
     {
