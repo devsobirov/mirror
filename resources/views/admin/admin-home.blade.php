@@ -7,10 +7,10 @@
             <div class="col">
                 <div class="d-flex align-items-center justify-content-between gap-2">
                     <h2 class="page-title">
-                        Панель управления
+                        Boshqaruv paneli
                     </h2>
 
-                    <a href="{{ route('worker.home') }}" class="btn btn-outline-primary btn-icon" title="Панель заказов">
+                    <a href="{{ route('worker.home') }}" class="btn btn-outline-primary btn-icon" title="Buyurtmalar paneli">
                         <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clipboard-list" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                             <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                             <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" />
@@ -32,21 +32,21 @@
         <!-- Блок офферов -->
         <div class="card mb-4">
             <div class="card-header">
-                <h3 class="card-title">Статистика офферов</h3>
+                <h3 class="card-title">Buyurtmalar statistikasi</h3>
                 <div class="card-actions d-flex align-items-center">
                     <!-- Фильтры для статистики -->
                     <form id="statistics-filter" class="mb-3">
                         <div class="d-flex gap-2">
                             <select class="form-select w-auto" name="period" id="period">
-                                <option value="today" selected>Сегодня</option>
-                                <option value="yesterday">Вчера</option>
-                                <option value="week">Текущая неделя</option>
-                                <option value="month">Текущий месяц</option>
-                                <option value="custom">Произвольный период</option>
+                                <option value="today" selected>Bugun</option>
+                                <option value="yesterday">Kecha</option>
+                                <option value="week">Joriy hafta</option>
+                                <option value="month">Joriy oy</option>
+                                <option value="custom">Ixtiyoriy davr</option>
                             </select>
                             <input type="date" class="form-control w-auto" name="start_date" id="start_date" style="display: none;">
                             <input type="date" class="form-control w-auto" name="end_date" id="end_date" style="display: none;">
-                            <button type="submit" class="btn btn-primary">Применить</button>
+                            <button type="submit" class="btn btn-primary">Qo'llash</button>
                         </div>
                     </form>
                 </div>
@@ -67,7 +67,7 @@
                                         {{ number_format($statistics['total_income'], 0, ',', ' ') }} UZS
                                         </div>
                                         <div class="text-muted">
-                                            Общий доход
+                                            Umumiy daromad
                                         </div>
                                     </div>
                                 </div>
@@ -88,7 +88,7 @@
                                         {{ $statistics['total_count'] }}
                                         </div>
                                         <div class="text-muted">
-                                            Количество офферов
+                                            Buyurtmalar soni
 
                                         </div>
                                     </div>
@@ -110,7 +110,7 @@
                                             {{ number_format($statistics['average_check'], 0, ',', ' ') }} UZS
                                         </div>
                                         <div class="text-muted">
-                                            Средний чек
+                                            O'rtacha chek
                                         </div>
                                     </div>
                                 </div>
@@ -124,30 +124,30 @@
                         <div class="d-flex align-items-center mb-3">
                             <div class="btn-group">
                                 <button type="button" class="btn" data-bs-toggle="dropdown" data-selected-period="week">
-                                    <i class="fas fa-calendar me-2"></i>График за неделю
+                                    <i class="fas fa-calendar me-2"></i>Haftalik grafik
                                 </button>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="#" data-chart-period="week">График за неделю</a>
-                                    <a class="dropdown-item" href="#" data-chart-period="last_week">График за прошлую неделю</a>
-                                    <a class="dropdown-item" href="#" data-chart-period="month">График за месяц</a>
-                                    <a class="dropdown-item" href="#" data-chart-period="months">График по месяцам</a>
-                                    <a class="dropdown-item" href="#" data-chart-period="years">График по годам</a>
+                                    <a class="dropdown-item" href="#" data-chart-period="week">Haftalik grafik</a>
+                                    <a class="dropdown-item" href="#" data-chart-period="last_week">O'tgan hafta grafigi</a>
+                                    <a class="dropdown-item" href="#" data-chart-period="month">Oylik grafik</a>
+                                    <a class="dropdown-item" href="#" data-chart-period="months">Oylar bo'yicha grafik</a>
+                                    <a class="dropdown-item" href="#" data-chart-period="years">Yillar bo'yicha grafik</a>
                                 </div>
                             </div>
 
                             <div class="btn-group ms-2">
                                 <button type="button" class="btn" data-bs-toggle="dropdown" data-selected-category="all">
-                                    <i class="fas fa-filter me-2"></i>Все категории
+                                    <i class="fas fa-filter me-2"></i>Barcha toifalar
                                 </button>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="#" data-chart-category="all">Все категории</a>
-                                    <a class="dropdown-item" href="#" data-chart-category="1">Категория 1</a>
-                                    <a class="dropdown-item" href="#" data-chart-category="2">Категория 2</a>
+                                    <a class="dropdown-item" href="#" data-chart-category="all">Barcha toifalar</a>
+                                    <a class="dropdown-item" href="#" data-chart-category="1">Toifa 1</a>
+                                    <a class="dropdown-item" href="#" data-chart-category="2">Toifa 2</a>
                                 </div>
                             </div>
 
                             <button type="button" class="btn btn-primary ms-2" id="apply-chart-filters">
-                                <i class="fas fa-check me-2"></i>Применить
+                                <i class="fas fa-check me-2"></i>Qo'llash
                             </button>
                         </div>
 
@@ -160,27 +160,27 @@
         <!-- Блок долгов -->
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Статистика долгов</h3>
+                <h3 class="card-title">Qarzlar statistikasi</h3>
                 <div class="card-actions">
                     <form id="debts-filter" class="d-flex gap-2 align-items-center">
                         <!-- Период -->
                         <select class="form-select w-auto" name="period" id="debt-period">
-                            <option value="week" selected>За неделю</option>
-                            <option value="month">За месяц</option>
-                            <option value="months">По месяцам</option>
-                            <option value="years">По годам</option>
+                            <option value="week" selected>Hafta bo'yicha</option>
+                            <option value="month">Oy bo'yicha</option>
+                            <option value="months">Oylar bo'yicha</option>
+                            <option value="years">Yillar bo'yicha</option>
                         </select>
 
                         <!-- Тип оплаты -->
                         <select class="form-select w-auto" name="payment_type" id="payment-type">
-                            <option value="all">Все типы оплат</option>
+                            <option value="all">Barcha to'lov turlari</option>
                             @foreach(\App\Enums\Finance\PaymentTypeEnum::list() as $value => $name)
                                 <option value="{{ $value }}">{{ $name }}</option>
                             @endforeach
                         </select>
 
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-check me-2"></i>Применить
+                            <i class="fas fa-check me-2"></i>Qo'llash
                         </button>
                     </form>
                 </div>
@@ -201,7 +201,7 @@
                                             {{ number_format($debtsStatistics['debts_given'], 0, ',', ' ') }} UZS
                                         </div>
                                         <div class="text-muted">
-                                            Выдано в долг
+                                            Qarzga berildi
                                         </div>
                                     </div>
                                 </div>
@@ -222,7 +222,7 @@
                                             {{ number_format($debtsStatistics['payments_received'], 0, ',', ' ') }} UZS
                                         </div>
                                         <div class="text-muted">
-                                            Получено платежей
+                                            To'lovlar qabul qilindi
                                         </div>
                                     </div>
                                 </div>
@@ -243,7 +243,7 @@
                                             {{ number_format($debtsStatistics['left_to_collect'], 0, ',', ' ') }} UZS
                                         </div>
                                         <div class="text-muted">
-                                            Осталось собрать
+                                            Yig'ish kerak
                                         </div>
                                     </div>
                                 </div>
@@ -264,7 +264,7 @@
                                             {{ $debtsStatistics['debtors_count'] }}
                                         </div>
                                         <div class="text-muted">
-                                            Должников
+                                            Qarzdorlar
                                         </div>
                                     </div>
                                 </div>
@@ -301,10 +301,10 @@
     // Инициализация графика
     var offersOptions = {
         series: [{
-            name: 'Доход',
+            name: 'Daromad',
             data: @json($chartData['data'])
         }, {
-            name: 'Количество заказов',
+            name: 'Buyurtmalar soni',
             data: @json($chartData['orders_count'])
         }],
         chart: {
@@ -325,7 +325,7 @@
         },
         yaxis: [{
             title: {
-                text: 'Доход (UZS)'
+                text: 'Daromad (UZS)'
             },
             labels: {
                 formatter: function(val) {
@@ -334,7 +334,7 @@
             }
         }, {
             title: {
-                text: 'Количество заказов'
+                text: 'Buyurtmalar soni'
             },
             opposite: true,
             labels: {
@@ -350,7 +350,7 @@
                 }
             }, {
                 formatter: function(val) {
-                    return Math.round(val) + ' заказов'
+                    return Math.round(val) + ' buyurtmasi'
                 }
             }]
         }
@@ -362,10 +362,10 @@
     // Инициализация графика долгов
     var debtsOptions = {
         series: [{
-            name: 'Выдано в долг',
+            name: 'Qarzga berildi',
             data: [850000, 650000, 450000, 300000, 200000, 150000, 100000]
         }, {
-            name: 'Получено платежей',
+            name: 'To\'lovlar qabul qilindi',
             data: [750000, 550000, 350000, 250000, 150000, 100000, 50000]
         }],
         chart: {
@@ -391,11 +391,11 @@
             colors: ['transparent']
         },
         xaxis: {
-            categories: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+            categories: ['Dush', 'Sesh', 'Chor', 'Pay', 'Jum', 'Shan', 'Yak'],
         },
         yaxis: {
             title: {
-                text: 'Сумма (UZS)'
+                text: 'Summa (UZS)'
             },
             labels: {
                 formatter: function(val) {
@@ -441,7 +441,7 @@
 
                 if (period === 'custom') {
                     if (!startDateInput.value || !endDateInput.value) {
-                        alert('Выберите даты для произвольного периода');
+                        alert('Ixtiyoriy davrni tanlang');
                         return;
                     }
                     data.start_date = startDateInput.value;
@@ -468,7 +468,7 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Произошла ошибка при получении данных');
+                    alert('Ma\'lumotlar olishda xatolik yuz berdi');
                 });
             });
         }
@@ -534,10 +534,10 @@
                 });
                 
                 offersChart.updateSeries([{
-                    name: 'Доход',
+                    name: 'Daromad',
                     data: data.chartData.data.map(val => Math.round(val))
                 }, {
-                    name: 'Количество заказов',
+                    name: 'Buyurtmalar soni',
                     data: data.chartData.orders_count
                 }]);
             }
@@ -653,10 +653,10 @@
             });
             
             debtsChart.updateSeries([{
-                name: 'Выдано в долг',
+                name: 'Qarzga berildi',
                 data: data.chartData.debts
             }, {
-                name: 'Получено платежей',
+                name: 'To\'lovlar qabul qilindi',
                 data: data.chartData.payments
             }]);
 
@@ -671,7 +671,7 @@
                 data.statistics.debtors_count;
         })
         .catch(error => {
-            console.error('Ошибка при получении данных:', error);
+            console.error('Ma\'lumotlar olishda xatolik yuz berdi:', error);
         });
     });
 </script>

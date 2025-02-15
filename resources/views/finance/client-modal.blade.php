@@ -10,7 +10,7 @@
                     @if($item->id)
                         {{$item->name}}ni tahrirlash
                     @else
-                        Yangi mijoz kiritish
+                        Mijoz qo'shish
                     @endif
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -25,7 +25,7 @@
                     </div>
                     <div class="col-lg-6">
                         <div class="mb-3">
-                            <label class="form-label">Mijoz raqami</label>
+                            <label class="form-label">Telefon raqami</label>
                              <div class="input-group">
                                  <button type="button" class="btn">+998</button>
                                 <input type="text" name="phone" value="{{$item->phone_number}}" class="form-control" data-mask="(00) 000-00-00" data-mask-visible="true" placeholder="(99) 000-00-00" autocomplete="off">
@@ -34,7 +34,7 @@
                     </div>
                     <div class="col-lg-6">
                         <div class="mb-3">
-                            <label class="form-label">Mijoz raqami (qo'shimcha)</label>
+                            <label class="form-label">Qo'shimcha raqam</label>
                              <div class="input-group">
                                  <button type="button" class="btn">+998</button>
                                 <input type="text" name="phone2" value="{{$item->phone_number2}}" class="form-control" data-mask="(00) 000-00-00" data-mask-visible="true" placeholder="(99) 000-00-00" autocomplete="off">
@@ -43,7 +43,7 @@
                     </div>
                     <div class="col-lg-12">
                         <div class="mb-3">
-                            <label class="form-label">Mijoz manzili</label>
+                            <label class="form-label">Manzil</label>
                             <input type="text" name="address" value="{{$item->address}}" class="form-control" placeholder="Mijoz manzili...">
                         </div>
                     </div>

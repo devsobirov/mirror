@@ -38,9 +38,9 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">Долги к оплате сегодня</h3>
+                            <h3 class="card-title">Bugungi to'lanadigan qarzlar</h3>
                             <div class="card-actions">
-                                <span class="badge bg-red">{{ $todayDebts->count() }} долгов</span>
+                                <span class="badge bg-red">{{ $todayDebts->count() }} qarzlar</span>
                             </div>
                         </div>
                         <div class="card-body">
@@ -59,7 +59,7 @@
                                                         {{ number_format($todayDebtsTotal, 0, ',', ' ') }} UZS
                                                     </div>
                                                     <div class="text-muted">
-                                                        Общая сумма
+                                                        Umumiy summa
                                                     </div>
                                                 </div>
                                             </div>
@@ -80,7 +80,7 @@
                                                         {{ number_format($todayDebtsReceived, 0, ',', ' ') }} UZS
                                                     </div>
                                                     <div class="text-muted">
-                                                        Получено
+                                                        Qabul qilindi
                                                     </div>
                                                 </div>
                                             </div>
@@ -284,8 +284,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn me-auto" data-bs-dismiss="modal">Отмена</button>
-                <button type="button" class="btn btn-primary" id="save-status">Сохранить</button>
+                <button type="button" class="btn me-auto" data-bs-dismiss="modal">Bekor qilish</button>
+                <button type="button" class="btn btn-primary" id="save-status">Saqlash</button>
             </div>
         </div>
     </div>
@@ -310,7 +310,7 @@
                         <p class="mb-1"><strong>Клиент:</strong> <span id="client-name"></span></p>
                         <p class="mb-1"><strong>Телефон:</strong> <span id="phone_number"></span></p>
                         <p class="mb-1"><strong>Доп. телефон:</strong> <span id="phone_number2"></span></p>
-                        <p class="mb-1"><strong>Комментарий:</strong> <span id="client-comment"></span></p>
+                        <p class="mb-1"><strong>Izoh:</strong> <span id="client-comment"></span></p>
                     </div>
                     <div class="col-lg-6 text-end">
                         <p class="mb-1"><strong>Дата:</strong> <span id="order-date"></span></p>
@@ -337,11 +337,11 @@
                                 <td class="text-end" id="total-cost"></td>
                             </tr>
                             <tr>
-                                <td colspan="4" class="text-end"><strong>Скидка:</strong></td>
+                                <td colspan="4" class="text-end"><strong>Chegirma:</strong></td>
                                 <td class="text-end" id="discount-amount"></td>
                             </tr>
                             <tr>
-                                <td colspan="4" class="text-end"><strong>К оплате:</strong></td>
+                                <td colspan="4" class="text-end"><strong>To'lanadigan:</strong></td>
                                 <td class="text-end" id="final-cost"></td>
                             </tr>
                         </tfoot>
@@ -356,68 +356,40 @@
 
 @section('custom_scripts')
 <script>
-// Alpine.js функции для форматирования суммы
+let currentOfferId = null;
+
+// Функции для форматирования суммы
 function formatAmount() {
     return {
         amount: '',
         amountInWords: '',
-        formatNumber(value) {
-            if (!value) return '';
-            
-            value = parseInt(value);
-            
-            if (value >= 1000000) {
-                const millions = Math.floor(value / 1000000);
-                const thousands = Math.floor((value % 1000000) / 1000);
-                
-                let text = millions + ' mln';
-                if (thousands > 0) {
-                    text += ' ' + thousands + ' ming';
-                }
-                return text + ' UZS';
-            } else if (value >= 1000) {
-                const thousands = Math.floor(value / 1000);
-                return thousands + ' ming UZS';
-            }
-            
-            return value + ' UZS';
-        },
         init() {
-            this.$watch('amount', (value) => {
-                this.amountInWords = this.formatNumber(value);
-                
-                // Update the small text below input
-                const input = this.$el.querySelector('input[name="amount"]');
-                const small = input.nextElementSibling;
-                small.textContent = this.amountInWords;
+            this.$watch('amount', value => {
+                this.amountInWords = this.numberToWords(value);
             });
+        },
+        numberToWords(num) {
+            if (!num) return '';
+            // Здесь можно добавить конвертацию числа в слова
+            return num + ' сум';
         }
     }
 }
 
-// Alpine.js функции для рейтинга
+// Функции для рейтинга
 function ratingData() {
     return {
         rating: 0,
-        colors: {
-            1: '#d63939', // red
-            2: '#e85d04', // orange-red
-            3: '#f8c200', // yellow
-            4: '#74b816', // light green
-            5: '#2fb344'  // green
-        },
-        getColor(starRating) {
-            return starRating <= this.rating ? this.colors[this.rating] : '#dadfe5'
-        },
-        setRating(value) {
-            this.rating = value;
+        getColor(star) {
+            return {
+                'text-yellow': this.rating >= star,
+                'text-muted': this.rating < star
+            }
         }
     }
 }
 
-// Остальные функции JavaScript
-let currentOfferId = null;
-
+// Основные функции для работы с заказами
 function editStatus(offerId, currentStatus) {
     currentOfferId = offerId;
     document.getElementById('status-select').value = currentStatus;
@@ -503,20 +475,10 @@ async function showOfferDetails(offerId) {
         offer.offer_items?.forEach(item => {
             const row = `
                 <tr>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            ${item.service_image ? `<span class="avatar me-2" style="background-image: url(${item.service_image})"></span>` : ''}
-                            ${item.service_name}
-                        </div>
-                    </td>
+                    <td>${item.service_name}</td>
                     <td>${item.unit || '-'}</td>
                     <td class="text-end">${item.quantity}</td>
-                    <td class="text-end">
-                        ${item.has_discount 
-                            ? `<s class="text-muted">${item.original_price}</s><br>${item.price}`
-                            : item.price
-                        }
-                    </td>
+                    <td class="text-end">${item.price}</td>
                     <td class="text-end">${item.total}</td>
                 </tr>
             `;
@@ -534,45 +496,4 @@ async function showOfferDetails(offerId) {
     }
 }
 </script>
-
-<!-- Добавляем стили для рейтинга -->
-<style>
-.rating-star {
-    transition: color 0.3s ease;
-}
-.rating-star svg {
-    fill: #dadfe5;
-}
-.rating-star:hover svg {
-    fill: currentColor;
-}
-
-/* Hover colors */
-.rating-star[data-rating="1"]:hover { color: #d63939; }
-.rating-star[data-rating="2"]:hover { color: #f59f00; }
-.rating-star[data-rating="3"]:hover { color: #f8c200; }
-.rating-star[data-rating="4"]:hover { color: #74b816; }
-.rating-star[data-rating="5"]:hover { color: #2fb344; }
-
-/* Selected colors */
-.rating-input:checked ~ .rating-star svg { fill: #dadfe5 !important; }
-.rating-input:checked + .rating-star svg { fill: currentColor !important; }
-
-/* Color schemes for selected ratings */
-.rating-input[value="1"]:checked + .rating-star { color: #d63939; }
-.rating-input[value="2"]:checked + .rating-star,
-.rating-input[value="2"]:checked + .form-selectgroup-item .rating-star { color: #f59f00; }
-.rating-input[value="3"]:checked + .rating-star,
-.rating-input[value="3"]:checked + .form-selectgroup-item .rating-star,
-.rating-input[value="3"]:checked + .form-selectgroup-item + .form-selectgroup-item .rating-star { color: #f8c200; }
-.rating-input[value="4"]:checked + .rating-star,
-.rating-input[value="4"]:checked + .form-selectgroup-item .rating-star,
-.rating-input[value="4"]:checked + .form-selectgroup-item + .form-selectgroup-item .rating-star,
-.rating-input[value="4"]:checked + .form-selectgroup-item + .form-selectgroup-item + .form-selectgroup-item .rating-star { color: #74b816; }
-.rating-input[value="5"]:checked + .rating-star,
-.rating-input[value="5"]:checked + .form-selectgroup-item .rating-star,
-.rating-input[value="5"]:checked + .form-selectgroup-item + .form-selectgroup-item .rating-star,
-.rating-input[value="5"]:checked + .form-selectgroup-item + .form-selectgroup-item + .form-selectgroup-item .rating-star,
-.rating-input[value="5"]:checked + .form-selectgroup-item + .form-selectgroup-item + .form-selectgroup-item + .form-selectgroup-item .rating-star { color: #2fb344; }
-</style>
 @endsection

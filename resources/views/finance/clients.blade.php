@@ -47,13 +47,13 @@
                                 <td>{{$item->debt ? (number_format($item->debt) ." UZS") : "Yo'q"}}</td>
                                 <td><x-rating :rating="$item->rating"></x-rating></td>
                                 <td>
-                                    <a href="#" class="btn btn-icon btn-azure" title="Buyurtma yaratish"
+                                    <!-- <a href="#" class="btn btn-icon btn-azure" title="Buyurtma yaratish"
                                        data-bs-target="#client-{{$item->id}}" data-bs-toggle="modal">
                                         <x-svg.plus></x-svg.plus>
-                                    </a>
+                                    </a> -->
                                     <a href="#" class="btn btn-icon btn-pink" title="Qarz berish"
                                        data-bs-target="#debt-{{$item->id}}" data-bs-toggle="modal">
-                                        <x-svg.bills></x-svg.bills>
+                                       <x-svg.bills></x-svg.bills>
                                     </a>
                                     <a href="#" class="btn btn-icon btn-success" title="Tahrirlash"
                                        data-bs-target="#client-{{$item->id}}" data-bs-toggle="modal">
