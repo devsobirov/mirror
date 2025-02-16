@@ -28,7 +28,10 @@ class DebtService
     public static function updateDebtStatus(Debt $debt): int|updateDebtStatus
     {
         if (self::checkDebtFullyPaid($debt)) {
-            $debt->update(['status' => DebtStatusEnum::Paid->value]);
+            $debt->update([
+                'status' => DebtStatusEnum::Paid->value,
+                'closed_at' => now()
+            ]);
         }
 
         return $debt->status;

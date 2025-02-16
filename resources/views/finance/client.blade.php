@@ -31,7 +31,9 @@
                 <table class="table table-bordered">
                     <thead>
                         <tr>
-                            <th>Sana</th>
+                            <th>Berilgan sana</th>
+                            <th>Yopish sanani</th>
+                            <th>Yopilgan sana</th>
                             <th>Qarz miqdori</th>
                             <th>Qoldiq</th>
                             <th>To'lovlar</th>
@@ -43,7 +45,9 @@
                     <tbody>
                         @foreach($debts as $debt)
                             <tr>
-                                <td>{{ $debt->payment_date->format('d.m.Y') }}</td>
+                                <td>{{ $debt->created_at?->format('d.m.Y') ?? '-' }}</td>
+                                <td>{{ $debt->payment_date?->format('d.m.Y') ?? '-' }}</td>
+                                <td>{{ $debt->closed_at?->format('d.m.Y') ?? '-'}}</td>
                                 <td>{{ number_format($debt->amount, 0, '.', ' ') }}</td>
                                 <td>
                                     {{ number_format($debt->amount - $debt->payments->sum('amount'), 0, '.', ' ') }}
@@ -83,12 +87,17 @@
                                 $total_payments = $debts->flatten()->flatMap->payments->sum('amount');
                                 $total_debt_remaining = $total_debt - $total_payments;
                             @endphp
-                            <td><strong>Jami:</strong></td>
+                            <td colspan="3"><strong>Jami:</strong></td>
                             <td>{{ number_format($total_debt, 0, '.', ' ') }}</td>
                             <td>{{ number_format($total_debt_remaining, 0, '.', ' ') }}</td>
                             <td>{{ number_format($total_payments, 0, '.', ' ') }}</td>
                             <td><x-rating :rating="$rating"></x-rating></td>
-                            <td></td>
+                            <td>
+                            <a href="#" class="btn btn-pink" title="Qarz berish"
+                                data-bs-target="#debt-{{$client->id}}" data-bs-toggle="modal">
+                                Qarz berish
+                            </a>
+                            </td>
                         </tr>
                     </tfoot>
                 </table>
@@ -96,6 +105,7 @@
         </div>
     </div>
 </div>
+@include('finance.debt-modal', ['item' => $client])
 @endsection
 
 <script>

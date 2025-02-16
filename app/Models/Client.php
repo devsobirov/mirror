@@ -30,4 +30,13 @@ class Client extends Model
     {
         $query->withAvg('debts as rating', 'rating');
     }
+
+    public function getRatingAttribute($value)
+    {
+        if (is_numeric($value)) {
+            $value = round($value, 2);
+        }
+        
+        return $value;
+    }
 }

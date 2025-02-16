@@ -10,18 +10,38 @@ use App\Models\Finance\Debt;
 use App\Models\Finance\Payment;
 use App\Services\Finance\DebtService;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Builder;
 
 class DebtsController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $items = Debt::query()
-            ->byStatus(DebtStatusEnum::Pending->value)
-            ->with('client', 'payments')
-            ->orderBy('payment_date')
-            ->paginate();
+        $query = Debt::query();
 
-        return view('finance.debts', compact('items'));
+        // Применяем фильтры
+        $query->byStatus($request->input('status') ?: DebtStatusEnum::Pending->value)
+              ->byPaymentDateFrom($request->input('date_from'))
+              ->byPaymentDateTo($request->input('date_to'))
+              ->byClient($request->input('search_client'));
+
+        $items = $query->orderBy('payment_date', $request->sort ?: 'desc')->paginate()->withQueryString();
+
+        // Генерируем агрегаты только для админа
+        $stats = auth()->user()->isAdmin() ? $this->generateStats($query) : null;
+
+        return view('finance.debts', compact('items', 'stats'));
+    }
+
+    private function generateStats(Builder $query)
+    {
+        $sum = $query->sum('amount');
+        $paid = $query->withSum('payments as paid_sum', 'amount')->get()->sum('paid_sum');
+        return [
+            'total_debts' => $sum,
+            'total_paid' => $paid,
+            'total_left' => $sum - $paid,
+            'debtors_count' => $query->distinct('client_id')->count('client_id'),
+        ];
     }
 
     public function create(DebtCreateRequest $request)

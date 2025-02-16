@@ -41,102 +41,100 @@
 .rating-input[value="5"]:checked + .form-selectgroup-item + .form-selectgroup-item + .form-selectgroup-item + .form-selectgroup-item .rating-star { color: #2fb344; }
 </style>
     <div class="container-xl">
-        <!-- Page title -->
+        <!-- Фильтры -->
         <div class="page-header d-print-none">
-            <h2 class="page-title">
-                Aktiv qarzlar ({{$items->total()}})
-            </h2>
+            <h2 class="page-title">Aktiv qarzlar ({{$items->total()}})</h2>
             <div class="col-auto ms-auto d-print-none">
-                <form action="{{route('sklad.expenses.index')}}" class="d-md-flex d-sm-block align-items-center gap-1">
-                    <input type="date" class="form-control" name="from" value="{{request('from')}}" min="{{now()->startOfYear()->format('Y-m-d')}}">
-                    <input type="date" class="form-control" name="to" value="{{request('to')}}" max="{{now()->format('Y-m-d')}}">
-                    <select class="form-select mr-2" name="warehouse_id">
-                        <option value="">Oldin eski qarzlar</option>
-                        <option value="">Oldin yangi qarzlar</option>
+                <form action="{{ route('finance.debts.index') }}" class="d-md-flex d-sm-block align-items-center gap-1">
+                    <input type="date" class="form-control" name="date_from" placeholder="Sana (dan)" value="{{request('date_from')}}">
+                    <input type="date" class="form-control" name="date_to" placeholder="Sana (gacha)" value="{{request('date_to')}}">
+                    <select class="form-select" name="status">
+                        <option value="">Holati bo'yicha</option>
+                        @foreach(\App\Enums\Finance\DebtStatusEnum::list() as $value => $label)
+                            <option value="{{ $value }}" @selected(request('status') == $value)>
+                                {{ $label }}
+                            </option>
+                        @endforeach
                     </select>
-                    <input type="search" class="form-control d-inline-block w-12 me-1" minlength="2" placeholder="Mijoz ismi, tel ..." name="search_client" value="{{request('search_client')}}">
-                    <button class="btn me-1 btn-icon btn-azure" title="Izlash"><x-svg.search></x-svg.search></button>
+                    <select class="form-select" name="sort">
+                        <option value="" @selected(!request('sort'))>Oldin Eski qarzlar</option>
+                        <option value="asc" @selected(request('sort') == 'asc')>Oldin Yangi qarzlar</option>
+                    </select>
+                    <input type="search" class="form-control" placeholder="Mijoz ismi yoki tel..." name="search_client" value="{{ request('search_client') }}">
+                    @if(request('date_from') || request('date_to') || request('status') || request('search_client')|| request('sort'))
+                        <a href="{{ route('finance.debts.index') }}" class="btn btn-secondary">Сбросить фильтры</a>
+                    @endif
+                    <button class="btn btn-primary" type="submit">Qidirish</button>
                 </form>
             </div>
         </div>
     </div>
     <div class="page-body">
         <div class="container-xl">
-
-            <div class="card">
+            <div class="card mb-4">
                 <div class="table-responsive">
                     <table class="table" id="dataTable">
                         <thead>
-                        <tr>
-                            <th>Mijoz</th>
-                            <th>Olingan Sana</th>
-                            <th>To'lov sanasi</th>
-                            <th>Qarz miqdori (UZS)</th>
-                            <th>To'langan (UZS)</th>
-                            <th>Qoldiq (UZS)</th>
-                            <th>Holati</th>
-                            <th></th>
-                        </tr>
+                            <tr>
+                                <th>Mijoz</th>
+                                <th>Olingan Sana</th>
+                                <th>Yopish sanasi</th>
+                                <th>Qarz miqdori (UZS)</th>
+                                <th>To'langan (UZS)</th>
+                                <th>Qoldiq (UZS)</th>
+                                <th>Holati</th>
+                                <th></th>
+                            </tr>
                         </thead>
                         <tbody>
-                        @forelse($items as $item)
-                            <tr>
-                                <td>
-                                    @if($client = $item->client)
-                                        <a href="#" class="mb-2 d-inline-block" data-bs-toggle="modal" data-bs-target="#modal-client-{{$client->id}}">{{$client->name}}</a>
-                                        <p class="mb-1">Tel: {{$client->phone_number ?? '-'}}</p>
-                                        <p class="mb-1">Tel2: {{$client->phone_number2 ?? '-'}}</p>
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-                                <td>
-                                    <span class="text-secondary"><x-svg.calendar></x-svg.calendar></span>
-                                    {{ $item->created_at?->format('d F-Y') ?? '-' }}
-                                    <p class="mt-2"> ({{$item->created_at?->diffForHumans()}})</p>
-                                </td>
-                                <td>
-                                    <span class="text-secondary"><x-svg.calendar></x-svg.calendar></span>
-                                    {{ $item->payment_date?->format('d M-Y') ?? '-' }}
-                                    <p class="mt-2"> ({{$item->payment_date?->diffForHumans()}})</p>
-                                </td>
-                                <td>
-                                    <span class="status status-primary">
-                                      <span class="status-dot status-dot-animated"></span>
-                                      {{ number_format($item->amount, 0, ',', ' ') }} UZS
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="status status-success">
-                                      <span class="status-dot status-dot-animated"></span>
-                                      {{ number_format($item->paid_amount, 0, ',', ' ') }} UZS
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="status status-warning">
-                                      <span class="status-dot status-dot-animated"></span>
-                                      {{ number_format($item->left_amount, 0, ',', ' ') }} UZS
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="status status-{{ $statusColors[$item->status] ?? 'secondary' }}">
-                                      <span class="status-dot status-dot-animated"></span>
-                                      {{ $item->status_name }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <a href="#" class="btn btn-success" title="Tahrirlash"
-                                       data-bs-target="#payment-{{$item->id}}" data-bs-toggle="modal">
-                                        To'lov yaratish
-                                    </a>
-                                    @include('finance.payment-modal', ['item' => $item])
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="8" class="text-center">Aktiv qarzlar topilmadi</td>
-                            </tr>
-                        @endforelse
+                            @forelse($items as $item)
+                                <tr>
+                                    <td>
+                                        @if($client = $item->client)
+                                            <a href="{{ route('finance.clients.show', $client->id) }}" class="mb-2 d-inline-block">
+                                                {{$client->name}}
+                                            </a>
+                                            <p class="mb-1">Tel: {{$client->phone_number ?? '-'}}</p>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    <td>{{ $item->created_at?->format('d F-Y') ?? '-' }}</td>
+                                    <td>{{ $item->payment_date?->format('d M-Y') ?? '-' }}</td>
+                                    <td>
+                                        <span class="status status-primary">
+                                            <span class="status-dot status-dot-animated"></span> {{ number_format($item->amount, 0, ',', ' ') }} UZS
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if($item->paid_amount > 0)
+                                            <span class="status status-success" data-bs-toggle="modal" data-bs-target="#payment-modal-{{$item->id}}">
+                                                <span class="status-dot status-dot-animated"></span>  {{ number_format($item->paid_amount, 0, ',', ' ') }} UZS
+                                            </span>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <span class="status status-warning">
+                                            <span class="status-dot status-dot-animated"></span> {{ number_format($item->left_amount, 0, ',', ' ') }} UZS
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="status status-{{ $item->status_color }}"><span class="status-dot status-dot-animated"></span> {{ $item->status_name }}</span>
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn btn-success" title="Tahrirlash" data-bs-target="#payment-{{$item->id}}" data-bs-toggle="modal">
+                                            To'lov yaratish
+                                        </a>
+                                        @include('finance.payment-modal', ['item' => $item])
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="8" class="text-center">Aktiv qarzlar topilmadi</td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -146,8 +144,81 @@
                     </div>
                 @endif
             </div>
+
+            <!-- Блок агрегатов -->
+        @if(auth()->user()->isAdmin() && $stats)
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Jami</h5>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="p-3 border rounded bg-light text-center">
+                                        <h6 class="mb-0">Jami qarzlar</h6>
+                                        <h3 class="mt-2">{{ number_format($stats['total_debts'], 0, ',', ' ') }}</h3>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="p-3 border rounded bg-light text-center">
+                                        <h6 class="mb-0">To'langan summa</h6>
+                                        <h3 class="mt-2">{{ number_format($stats['total_paid'], 0, ',', ' ') }} UZS</h3>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="p-3 border rounded bg-light text-center">
+                                        <h6 class="mb-0">Qoldiq summa</h6>
+                                        <h3 class="mt-2">{{ number_format($stats['total_left'], 0, ',', ' ') }} UZS</h3>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="p-3 border rounded bg-light text-center">
+                                        <h6 class="mb-0">Qarzdorlar soni</h6>
+                                        <h3 class="mt-2">{{ $stats['debtors_count'] }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
         </div>
     </div>
+
+    <!-- Модальное окно для отображения информации о платежах -->
+    @foreach($items as $item)
+        <div class="modal fade" id="payment-modal-{{$item->id}}" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">To'lovlar - {{$item->client->name}}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Sana</th>
+                                    <th>Miqdor (UZS)</th>
+                                    <th>Tur</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($item->payments as $payment)
+                                    <tr>
+                                        <td>{{ $payment->created_at->format('d F Y') }}</td>
+                                        <td>{{ number_format($payment->amount, 0, ',', ' ') }} UZS</td>
+                                        <td>{{ $payment->type_name }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endforeach
 @endsection
 
 <script>

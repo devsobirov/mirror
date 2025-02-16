@@ -18,6 +18,7 @@ class Debt extends Model
     protected $guarded = false;
     protected $casts = [
         'payment_date' => 'datetime',
+        'closed_at' => 'datetime',
     ];
 
     public function client(): BelongsTo
@@ -50,5 +51,37 @@ class Debt extends Model
     {
         $left = $this->amount - $this->paid_amount;
         return max($left, 0);
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('status', DebtStatusEnum::Pending->value);
+    }
+
+    public function scopeByPaymentDate(Builder $query, ?string $dateFrom, ?string $dateTo): Builder
+    {
+        return $query->when($dateFrom, fn($q) => $q->where('payment_date', '>=', $dateFrom))
+                     ->when($dateTo, fn($q) => $q->where('payment_date', '<=', $dateTo));
+    }
+
+    public function scopeByPaymentDateFrom(Builder $query, ?string $dateFrom): Builder
+    {
+        return $query->when($dateFrom, fn($q) => $q->where('payment_date', '>=', $dateFrom));
+    }
+
+    public function scopeByPaymentDateTo(Builder $query, ?string $dateTo): Builder
+    {
+        return $query->when($dateTo, fn($q) => $q->where('payment_date', '<=', $dateTo));
+    }
+
+    public function scopeByClient(Builder $query, ?string $search): Builder
+    {
+        return $query->when($search, function ($q) use ($search) {
+            return $q->whereHas('client', function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('phone2', 'like', "%{$search}%");
+            });
+        });
     }
 }
