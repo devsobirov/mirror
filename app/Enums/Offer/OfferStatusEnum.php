@@ -14,9 +14,9 @@ enum OfferStatusEnum: int
     public static function list(): array
     {
         return [
-            self::Draft->value => 'Черновик',
-            self::Paid->value => 'Оплачен',
-            self::Completed->value => 'Завершен',
+            self::Draft->value => 'Chernovik',
+            self::Paid->value => 'To\'langan',
+            self::Completed->value => 'Yakunlangan',
         ];
     }
 

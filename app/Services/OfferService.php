@@ -23,6 +23,10 @@ class OfferService
             'manager_id' => $data['manager_id'],
         ];
 
+        if ($date = $data['created_at'] ?? null) {
+            $offerData['created_at'] = $date;
+        }
+        
         // Рассчитываем общую стоимость и скидку
         $totalCost = collect($data['offer_items'])->sum(function ($item) {
             return $item['cost'];

@@ -2,17 +2,17 @@
 
 @section('content')
     <div class="container-xl">
-        <!-- Page title -->
+        <!-- Sahifa sarlavhasi -->
         <div class="page-header d-print-none">
             <h2 class="page-title">
-                Заказы ({{$offers->total()}})
+                Buyurtmalar ({{$offers->total()}})
             </h2>
             <div class="col-auto ms-auto d-print-none">
                 <form action="{{ route('offers.index') }}" class="d-md-flex d-sm-block align-items-center gap-1">
                     <input type="date" class="form-control d-inline-block w-12 me-1" name="date_from" value="{{ request('date_from') }}">
                     <input type="date" class="form-control d-inline-block w-12 me-1" name="date_to" value="{{ request('date_to') }}">
                     <select class="form-select d-inline-block w-12 me-1" name="status">
-                        <option value="">Все статусы</option>
+                        <option value="">Barcha holatlar</option>
                         @foreach(\App\Enums\Offer\OfferStatusEnum::list() as $value => $label)
                             <option value="{{ $value }}" @selected(request('status') == $value)>
                                 {{ $label }}
@@ -20,22 +20,22 @@
                         @endforeach
                     </select>
                     <input type="search" class="form-control d-inline-block w-12 me-1" minlength="2" 
-                           placeholder="Поиск..." name="search" value="{{ request('search') }}">
-                    <button class="btn me-1 btn-icon btn-azure" title="Поиск">
+                           placeholder="Qidirish..." name="search" value="{{ request('search') }}">
+                    <button class="btn me-1 btn-icon btn-azure" title="Qidirish">
                         <x-svg.search></x-svg.search>
                     </button>
                     @if(request()->hasAny(['date_from', 'date_to', 'status', 'search']))
-                        <a href="{{ route('offers.index') }}" class="btn btn-outline-secondary me-1" title="Сбросить фильтры">
+                        <a href="{{ route('offers.index') }}" class="btn btn-outline-secondary me-1" title="Filtrlarni tozalash">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-refresh" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                 <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
                                 <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
                             </svg>
-                            Сбросить
+                            Tozalash
                         </a>
                     @endif
                     <a href="{{ route('offers.form') }}" class="btn btn-primary">
-                        Создать заказ
+                        Buyurtma yaratish
                     </a>
                 </form>
             </div>
@@ -50,13 +50,13 @@
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Клиент</th>
-                                <th>Телефон</th>
-                                <th>Сумма</th>
-                                <th>Скидка</th>
-                                <th>Статус</th>
-                                <th>Менеджер</th>
-                                <th>Дата</th>
+                                <th>Mijoz</th>
+                                <th>Telefon</th>
+                                <th>Summa</th>
+                                <th>Chegirma</th>
+                                <th>Holat</th>
+                                <th>Menejer</th>
+                                <th>Sana</th>
                                 <th class="w-1"></th>
                             </tr>
                         </thead>
@@ -83,19 +83,19 @@
                                         @if($offer->manager)
                                             {{ $offer->manager['name'] }}
                                         @else
-                                            <span class="text-muted">Не назначен</span>
+                                            <span class="text-muted">Belgilanmagan</span>
                                         @endif
                                     </td>
                                     <td>{{ $offer->created_at }}</td>
                                     <td>
                                         <div class="btn-list flex-nowrap">
-                                            <a href="#" class="btn btn-icon" title="Просмотр заказа"
+                                            <a href="#" class="btn btn-icon" title="Buyurtmani ko'rish"
                                                onclick="showOfferDetails({{ $offer->id }})"
                                                data-bs-toggle="modal" 
                                                data-bs-target="#modal-offer-details">
                                                 <x-svg.eye></x-svg.eye>
                                             </a>
-                                            <a href="{{route('offers.copy', $offer->id)}}" class="btn btn-icon" title="Копировать">
+                                            <a href="{{route('offers.copy', $offer->id)}}" class="btn btn-icon" title="Nusxalash">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                                     <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                                     <rect x="8" y="8" width="12" height="12" rx="2" />
@@ -104,7 +104,7 @@
                                             </a>
                                             <a href="#" 
                                                class="btn btn-icon" 
-                                               title="Редактировать статус"
+                                               title="Holatni tahrirlash"
                                                onclick="editStatus({{ $offer->id }}, {{ $offer->status }})"
                                                data-bs-toggle="modal" 
                                                data-bs-target="#modal-edit-status">
@@ -118,7 +118,7 @@
                                             @if(!$offer->status || $offer->status === \App\Enums\Offer\OfferStatusEnum::Draft->value)
                                                 <a href="#" 
                                                    class="btn btn-icon" 
-                                                   title="Удалить"
+                                                   title="O'chirish"
                                                    onclick="deleteOffer({{ $offer->id }})">
 
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-trash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -136,7 +136,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="9" class="text-center">Заказы не найдены</td>
+                                    <td colspan="9" class="text-center">Buyurtmalar topilmadi</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -151,17 +151,17 @@
         </div>
     </div>
 
-    <!-- Модальное окно редактирования статуса -->
+    <!-- Holatni tahrirlash modal oynasi -->
     <div class="modal modal-blur fade" id="modal-edit-status" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Изменить статус заказа</h5>
+                    <h5 class="modal-title">Buyurtma holatini o'zgartirish</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Статус</label>
+                        <label class="form-label">Holat</label>
                         <select class="form-select" id="status-select">
                             @foreach(\App\Enums\Offer\OfferStatusEnum::list() as $value => $label)
                                 <option value="{{ $value }}">{{ $label }}</option>
@@ -170,21 +170,21 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn me-auto" data-bs-dismiss="modal">Отмена</button>
-                    <button type="button" class="btn btn-primary" id="save-status">Сохранить</button>
+                    <button type="button" class="btn me-auto" data-bs-dismiss="modal">Bekor qilish</button>
+                    <button type="button" class="btn btn-primary" id="save-status">Saqlash</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Модальное окно просмотра заказа -->
+    <!-- Buyurtma tafsilotlarini ko'rish modal oynasi -->
     <div class="modal modal-blur fade" id="modal-offer-details" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Детали заказа #<span id="offer-number"></span></h5>
+                    <h5 class="modal-title">Buyurtma tafsilotlari #<span id="offer-number"></span></h5>
                     <div class="ms-auto">
-                        <a href="#" class="btn btn-icon" title="Печать" id="print-offer">
+                        <a href="#" class="btn btn-icon" title="Chop etish" id="print-offer">
                             <x-svg.printer></x-svg.printer>
                         </a>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -193,15 +193,15 @@
                 <div class="modal-body">
                     <div class="row mb-3">
                         <div class="col-lg-6">
-                            <p class="mb-1"><strong>Клиент:</strong> <span id="client-name"></span></p>
-                            <p class="mb-1"><strong>Телефон:</strong> <span id="phone_number"></span></p>
-                            <p class="mb-1"><strong>Доп. телефон:</strong> <span id="phone_number2"></span></p>
-                            <p class="mb-1"><strong>Комментарий:</strong> <span id="client-comment"></span></p>
+                            <p class="mb-1"><strong>Mijoz:</strong> <span id="client-name"></span></p>
+                            <p class="mb-1"><strong>Telefon:</strong> <span id="phone_number"></span></p>
+                            <p class="mb-1"><strong>Qo'shimcha telefon:</strong> <span id="phone_number2"></span></p>
+                            <p class="mb-1"><strong>Izoh:</strong> <span id="client-comment"></span></p>
                         </div>
                         <div class="col-lg-6 text-end">
-                            <p class="mb-1"><strong>Дата:</strong> <span id="order-date"></span></p>
-                            <p class="mb-1"><strong>Статус:</strong> <span id="order-status"></span></p>
-                            <p class="mb-1"><strong>Менеджер:</strong> <span id="order-manager"></span></p>
+                            <p class="mb-1"><strong>Sana:</strong> <span id="order-date"></span></p>
+                            <p class="mb-1"><strong>Holat:</strong> <span id="order-status"></span></p>
+                            <p class="mb-1"><strong>Menejer:</strong> <span id="order-manager"></span></p>
                         </div>
                     </div>
 
@@ -209,25 +209,25 @@
                         <table class="table table-vcenter" id="services-table">
                             <thead>
                                 <tr>
-                                    <th>Услуга</th>
-                                    <th>Ед. изм.</th>
-                                    <th class="text-end">Кол-во</th>
-                                    <th class="text-end">Цена</th>
-                                    <th class="text-end">Сумма</th>
+                                    <th>Xizmat</th>
+                                    <th>O'lchov birligi</th>
+                                    <th class="text-end">Miqdori</th>
+                                    <th class="text-end">Narx</th>
+                                    <th class="text-end">Summa</th>
                                 </tr>
                             </thead>
                             <tbody id="services-list"></tbody>
                             <tfoot>
                                 <tr>
-                                    <td colspan="4" class="text-end"><strong>Итого:</strong></td>
+                                    <td colspan="4" class="text-end"><strong>Jami:</strong></td>
                                     <td class="text-end" id="total-cost"></td>
                                 </tr>
                                 <tr>
-                                    <td colspan="4" class="text-end"><strong>Скидка:</strong></td>
+                                    <td colspan="4" class="text-end"><strong>Chegirma:</strong></td>
                                     <td class="text-end" id="discount-amount"></td>
                                 </tr>
                                 <tr>
-                                    <td colspan="4" class="text-end"><strong>К оплате:</strong></td>
+                                    <td colspan="4" class="text-end"><strong>To'lovga:</strong></td>
                                     <td class="text-end" id="final-cost"></td>
                                 </tr>
                             </tfoot>
@@ -271,13 +271,13 @@
                 alert(result.message);
             }
         } catch (error) {
-            console.error('Error:', error);
-            alert('Произошла ошибка при обновлении статуса');
+            console.error('Xato:', error);
+            alert('Holatni yangilashda xato yuz berdi');
         }
     });
 
     function deleteOffer(offerId) {
-        if (!confirm('Вы уверены, что хотите удалить этот заказ?')) return;
+        if (!confirm('Siz ushbu buyurtmani o\'chirishni xohlaysizmi?')) return;
 
         fetch(`/offers/${offerId}`, {
             method: 'DELETE',
@@ -295,8 +295,8 @@
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert('Произошла ошибка при удалении заказа');
+            console.error('Xato:', error);
+            alert('Buyurtmani o\'chirishda xato yuz berdi');
         });
     }
 
@@ -311,7 +311,7 @@
             const data = await response.json();
             const offer = data.data;
 
-            // Заполняем основные данные
+            // Asosiy ma'lumotlarni to'ldirish
             document.getElementById('offer-number').textContent = offer.id;
             document.getElementById('client-name').textContent = offer.client_name || '-';
             document.getElementById('phone_number').textContent = offer.phone_number || '-';
@@ -319,9 +319,9 @@
             document.getElementById('client-comment').textContent = offer.comment || '-';
             document.getElementById('order-date').textContent = offer.created_at || '-';
             document.getElementById('order-status').textContent = offer.status_name || '-';
-            document.getElementById('order-manager').textContent = offer.manager?.name || 'Не назначен';
+            document.getElementById('order-manager').textContent = offer.manager?.name || 'Belgilanmagan';
             
-            // Заполняем таблицу услуг
+            // Xizmatlar jadvalini to'ldirish
             const servicesList = document.getElementById('services-list');
             servicesList.innerHTML = '';
             
@@ -348,14 +348,14 @@
                 servicesList.innerHTML += row;
             });
 
-            // Заполняем итоги (используем готовые отформатированные значения из ресурса)
+            // Yakunlarni to'ldirish (tayyor formatlangan qiymatlarni resursdan foydalanamiz)
             document.getElementById('total-cost').textContent = offer.cost;
             document.getElementById('discount-amount').textContent = offer.discount_amount;
             document.getElementById('final-cost').textContent = offer.final_cost;
 
         } catch (error) {
-            console.error('Error:', error);
-            alert('Ошибка при загрузке данных заказа');
+            console.error('Xato:', error);
+            alert('Buyurtma ma\'lumotlarini yuklashda xato yuz berdi');
         }
     }
 </script>

@@ -38,11 +38,11 @@
                 <div class="col-md-4">
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="card-title mb-0">Каталог услуг</h5>
+                            <h5 class="card-title mb-0">Xizmatlar katalogi</h5>
                             <div class="ms-2 flex-grow-1" style="max-width: 200px;">
                                 <input type="text" 
                                        class="form-control form-control-sm" 
-                                       placeholder="Поиск услуги..."
+                                       placeholder="Xizmatni qidirish..."
                                        x-model.debounce.300ms="searchQuery"
                                        @input="handleSearch">
                             </div>
@@ -52,15 +52,15 @@
                             <template x-if="isSearching">
                                 <div class="p-3">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h6 class="m-0">Результаты поиска: <span class="text-muted" x-text="searchQuery"></span></h6>
+                                        <h6 class="m-0">Qidiruv natijalari: <span class="text-muted" x-text="searchQuery"></span></h6>
                                         <button class="btn btn-sm btn-outline-secondary" @click="clearSearch">
-                                            Очистить поиск
+                                            Qidiruvni tozalash
                                         </button>
                                     </div>
                                     
                                     <template x-if="searchResults.length === 0">
                                         <div class="text-center py-4 text-muted">
-                                            <p>По запросу "<span x-text="searchQuery"></span>" ничего не найдено</p>
+                                            <p>Qidiruvga "<span x-text="searchQuery"></span>" mos keladigan hech narsa topilmadi</p>
                                         </div>
                                     </template>
                                     
@@ -153,20 +153,20 @@
                     <form @submit.prevent="saveOffer">
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="card-title mb-0">Выбранные услуги</h5>
+                                <h5 class="card-title mb-0">Tanlangan xizmatlar</h5>
                                 <button type="submit" 
                                         class="btn btn-primary" 
                                         :disabled="!isFormValid || isSubmitting">
                                     <span x-show="isSubmitting" class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                    Сохранить заказ
+                                    Buyurtmani saqlash
                                 </button>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
                                     <template x-if="offerItems.length === 0">
                                         <div class="text-center p-4 text-muted">
-                                            <h3>Услуги не выбраны</h3>
-                                            <p>Выберите услуги из каталога слева</p>
+                                            <h3>Xizmatlar tanlanmagan</h3>
+                                            <p>Chapdagi katalogdan xizmatlarni tanlang</p>
                                         </div>
                                     </template>
                                     <template x-if="offerItems.length > 0">
@@ -174,10 +174,10 @@
                                             <thead>
                                                 <tr>
                                                     <th style="width: 40px">#</th>
-                                                    <th>Услуга</th>
-                                                    <th>Количество</th>
-                                                    <th>Цена за ед.</th>
-                                                    <th>Сумма</th>
+                                                    <th>Xizmat</th>
+                                                    <th>Miqdori</th>
+                                                    <th>Narx</th>
+                                                    <th>Summa</th>
                                                     <th style="width: 40px"></th>
                                                 </tr>
                                             </thead>
@@ -196,7 +196,7 @@
                                                                 </a>
                                                                 <div>
                                                                     <span x-text="item.name"></span>
-                                                                    <small class="text-muted d-block" x-text="'за 1 ' + item.unit"></small>
+                                                                    <small class="text-muted d-block" x-text="'1 ' + item.unit"></small>
                                                                 </div>
                                                             </div>
                                                         </td>
@@ -259,14 +259,14 @@
                                             </tbody>
                                             <tfoot>
                                                 <tr>
-                                                    <td colspan="4" class="text-end"><strong>Сумма:</strong></td>
+                                                    <td colspan="4" class="text-end"><strong>Summa:</strong></td>
                                                     <td><strong x-text="getTotalSum() + ' UZS'"></strong></td>
                                                     <td></td>
                                                 </tr>
                                                 <tr>
                                                     <td colspan="4" class="text-end">
                                                         <div class="d-flex align-items-center justify-content-end gap-2">
-                                                            <strong>Скидка:</strong>
+                                                            <strong>Chegirma:</strong>
                                                             <template x-if="!isEditingDiscount">
                                                                 <div class="d-flex align-items-center gap-2">
                                                                     <span x-text="discount + ' UZS'"></span>
@@ -297,7 +297,7 @@
                                                     <td></td>
                                                 </tr>
                                                 <tr>
-                                                    <td colspan="4" class="text-end"><strong>Итого со скидкой:</strong></td>
+                                                    <td colspan="4" class="text-end"><strong>Jami chegirma bilan:</strong></td>
                                                     <td><strong x-text="getFinalTotal() + ' UZS'"></strong></td>
                                                     <td></td>
                                                 </tr>
@@ -309,21 +309,21 @@
                                 <!-- Форма клиента -->
                                 <template x-if="offerItems.length > 0">
                                     <div class="mt-4">
-                                        <h3 class="mb-3">Информация о клиенте</h3>
+                                        <h3 class="mb-3">Mijoz haqida ma'lumot</h3>
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="mb-3">
-                                                    <label class="form-label required">ФИО клиента</label>
+                                                    <label class="form-label required">Mijoz F.I.O</label>
                                                     <input type="text" 
                                                            x-model="client.name" 
                                                            class="form-control" 
-                                                           placeholder="ФИО клиента или название организации"
+                                                           placeholder="Mijoz F.I.O yoki tashkilot nomi"
                                                            required>
                                                 </div>
                                             </div>
                                             <div class="col-lg-6">
                                                 <div class="mb-3">
-                                                    <label class="form-label required">Номер телефона</label>
+                                                    <label class="form-label required">Telefon raqami</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text">+998</span>
                                                         <input type="text" 
@@ -343,7 +343,7 @@
                                             </div>
                                             <div class="col-lg-6">
                                                 <div class="mb-3">
-                                                    <label class="form-label">Дополнительный номер</label>
+                                                    <label class="form-label">Qo'shimcha raqam</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text">+998</span>
                                                         <input type="text" 
@@ -362,22 +362,30 @@
                                             </div>
                                             <div class="col-lg-12">
                                                 <div class="mb-3">
-                                                    <label class="form-label">Примечание</label>
+                                                    <label class="form-label">Izoh</label>
                                                     <textarea x-model="client.note" 
                                                               class="form-control" 
                                                               rows="3" 
-                                                              placeholder="Дополнительная информация..."></textarea>
+                                                              placeholder="Qo'shimcha ma'lumot..."></textarea>
                                                 </div>
                                             </div>
                                             <div class="col-lg-6">
                                                 <div class="mb-3">
-                                                    <label class="form-label">Статус</label>
+                                                    <label class="form-label">Holat</label>
                                                     <select class="form-select" x-model="status">
                                                         @foreach(\App\Enums\Offer\OfferStatusEnum::list() as $value => $label)
                                                             <option value="{{ $value }}">{{ $label }}</option>
                                                         @endforeach
                                                     </select>
                                                 </div>
+                                            </div>
+                                            <!-- Добавляем поле для выбора даты заказа -->
+                                            <div class="mb-3">
+                                                <label class="form-label required">Sana</label>
+                                                <input type="date" 
+                                                       x-model="orderDate" 
+                                                       class="form-control"
+                                                       >
                                             </div>
                                         </div>
                                     </div>
@@ -410,6 +418,7 @@
                 note: ''
             },
             status: {{ \App\Enums\Offer\OfferStatusEnum::Draft->value }},
+            orderDate: '',
             
             get isFormValid() {
                 return this.offerItems.length > 0 && 
@@ -610,7 +619,7 @@
                 this.isSubmitting = true;
                 
                 try {
-                    console.log('Sending data:', {
+                    console.log('Ma\'lumotlarni yuborish:', {
                         client: {
                             name: this.client.name,
                             phone_number: this.client.phone_number,
@@ -619,6 +628,7 @@
                         },
                         status: this.status,
                         discount: this.discount,
+                        order_date: this.orderDate,
                         offer_items: this.prepareOfferItems()
                     });
 
@@ -638,14 +648,15 @@
                             },
                             status: this.status,
                             discount: this.discount,
+                            created_at: this.orderDate,
                             offer_items: this.prepareOfferItems()
                         })
                     });
 
-                    console.log('Response status:', response.status);
+                    console.log('Javob holati:', response.status);
                     
                     const result = await response.json();
-                    console.log('Response data:', result);
+                    console.log('Javob ma\'lumotlari:', result);
 
                     if (result.success) {
                         window.location.href = result.redirect || '{{ route('offers.index') }}';
@@ -656,7 +667,7 @@
                         });
                     }
                 } catch (error) {
-                    console.error('Save error:', error);
+                    console.error('Saqlash xatosi:', error);
                     alert('Xatolik yuz berdi. Qaytadan urinib ko\'ring');
                 } finally {
                     this.isSubmitting = false;

@@ -30,7 +30,8 @@ class SaveOfferRequest extends FormRequest
             'offer_items.*.quantity' => 'required|numeric|min:1',
             'offer_items.*.price' => 'required|numeric|min:0',
             'offer_items.*.original_price' => 'required|numeric|min:0',
-            'offer_items.*.cost' => 'required|numeric|min:0'
+            'offer_items.*.cost' => 'required|numeric|min:0',
+            'created_at' => 'nullable'
         ];
     }
 
@@ -42,6 +43,7 @@ class SaveOfferRequest extends FormRequest
             'phone2' => $this->clearPhone($this->input('client.phone_number2')),
             'comment' => $this->input('client.note'),
             'status' => $this->input('status', OfferStatusEnum::Draft->value),
+            'created_at' => $this->input('created_at') ? ($this->input('created_at') . ' ' . now()->format('H:i:s')) : now()->format('d-m-Y H:i:s'),
         ]);
     }
 
