@@ -44,6 +44,39 @@
 
     <div class="page-body">
         <div class="container-xl">
+            <!-- Статистика -->
+            @if(auth()->user()->isAdmin() && $stats)
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Jami</h5>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="p-3 border rounded bg-light text-center">
+                                            <h6 class="mb-0">Jami buyurtmalar (to'langan va yakunlangan)</h6>
+                                            <h3 class="mt-2">{{ number_format($stats['total'], 0, ',', ' ') }}</h3>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="p-3 border rounded bg-light text-center">
+                                            <h6 class="mb-0">Jami chegirmalar</h6>
+                                            <h3 class="mt-2">{{ number_format($stats['total_discount'], 0, ',', ' ') }} UZS</h3>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="p-3 border rounded bg-light text-center">
+                                            <h6 class="mb-0">Jami kirim</h6>
+                                            <h3 class="mt-2">{{ number_format($stats['total_cost'], 0, ',', ' ') }} UZS</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <div class="card">
                 <div class="table-responsive">
                     <table class="table" id="dataTable">

@@ -26,16 +26,28 @@ class OffersController extends Controller
 
     public function index(Request $request)
     {
-        $offers = Offer::query()
-            ->with(['manager'])
+        $query = Offer::query()
             ->search($request->get('search'))
             ->dateFrom($request->get('date_from'))
-            ->dateTo($request->get('date_to'))
-            ->byStatus($request->get('status'))
-            ->latest()
-            ->paginate(25);
+            ->dateTo($request->get('date_to'));
 
-        return view('services.offers', compact('offers'));
+        $offers = $query->byStatus($request->get('status'))->with(['manager'])->latest()->paginate(25)->withQueryString();
+        $stats = $this->getOfferStats($query);
+
+        return view('services.offers', compact('offers', 'stats'));
+    }
+
+    private function getOfferStats($query)
+    {
+        $query = $query->whereNot('status', OfferStatusEnum::Draft->value);
+        $stats = [];
+        if (auth()->user()->isAdmin()) {
+            $stats['total'] = $query->count();
+            $stats['total_discount'] = $query->sum('discount');
+            $stats['total_cost'] = $query->sum('cost');
+        }
+
+        return $stats;
     }
 
     public function form()
