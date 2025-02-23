@@ -55,7 +55,7 @@
 
                         <div class="col-lg-4 mb-3">
                             <div class="form-label">Kalkulyator turini tanlang</div>
-                            <select name="calculator_id" class="form-select" required>
+                            <select name="calculator_id" class="form-select">
                                 <option value="">Tanlang</option>
                                 @foreach(App\Enums\Service\ServiceCalculatorTypeEnum::list() as $value => $name)
                                     <option value="{{$value}}" @selected($service->calculator_id === $value)>{{$name}}</option>
