@@ -69,7 +69,7 @@
                         </div>
 
                         <div class="col-lg-6 mb-3">
-                            <label class="form-label required">Email (parolni qayta tiklash uchun)</label>
+                            <label class="form-label">Email (parolni qayta tiklash uchun)</label>
                             <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" placeholder="user@gmail.com" value="{{ old('email', auth()->user()->email) }}">
                             @error('email')
                             <div class="invalid-feedback">{{ $message }}</div>

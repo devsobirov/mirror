@@ -147,7 +147,11 @@ class OffersController extends Controller
                     'full_price' => $item->service->full_price,
                     'custom_price' => $item->price != $item->original_price ? $item->price : null,
                     'isEditingPrice' => false,
-                    'quantity' => $item->quantity
+                    'quantity' => $item->quantity,
+                    'x' => $item->x,
+                    'y' => $item->y,
+                    'dimension_amount' => $item->dimension_amount,
+                    'calculator' => $item->service->calculator_id
                 ];
             }),
             'discount' => $offer->discount
