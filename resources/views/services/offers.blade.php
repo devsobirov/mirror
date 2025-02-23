@@ -217,7 +217,7 @@
                 <div class="modal-header">
                     <h5 class="modal-title">Buyurtma tafsilotlari #<span id="offer-number"></span></h5>
                     <div class="ms-auto">
-                        <a href="#" class="btn btn-icon" title="Chop etish" id="print-offer">
+                        <a href="#" class="btn btn-icon" title="Chop etish" id="print-offer" onclick="printOffer(currentOffer)">
                             <x-svg.printer></x-svg.printer>
                         </a>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -276,6 +276,7 @@
 @section('custom_scripts')
 <script>
     let currentOfferId = null;
+    let currentOffer = null;
 
     function editStatus(offerId, currentStatus) {
         currentOfferId = offerId;
@@ -344,6 +345,7 @@
             
             const data = await response.json();
             const offer = data.data;
+            currentOffer = offer;
 
             // Asosiy ma'lumotlarni to'ldirish
             document.getElementById('offer-number').textContent = offer.id;
@@ -395,5 +397,104 @@
             alert('Buyurtma ma\'lumotlarini yuklashda xato yuz berdi');
         }
     }
+
+function printOffer(offer) {
+    // Создаем HTML для печати
+    let printContent = `
+        <div style="width: 80mm; min-height: 100vh; margin: 0 auto; padding: 2mm; box-sizing: border-box; font-family: 'Arial Narrow', sans-serif; font-size: 12px;">
+            <h2 style="text-align: center; margin: 2mm 0; font-size: 14px;">Xonqa-tech</h2>
+            <div style="text-align: center; margin-bottom: 3mm;">
+                <div>Buyurtma ID: ${offer.id}</div>
+                <div>Sana: ${offer.created_at}</div>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; margin: 0;">
+                <thead>
+                    <tr>
+                        <th style="border-bottom: 1px dashed #000; padding: 2mm 1mm; width: 8%">№</th>
+                        <th style="border-bottom: 1px dashed #000; padding: 2mm 1mm; text-align: left">Xizmat</th>
+                        <th style="border-bottom: 1px dashed #000; padding: 2mm 1mm; width: 12%; text-align: center">Miqdor</th>
+                        <th style="border-bottom: 1px dashed #000; padding: 2mm 1mm; width: 20%; text-align: right">Narx</th>
+                        <th style="border-bottom: 1px dashed #000; padding: 2mm 1mm; width: 20%; text-align: right">Jami</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+    // Заполняем таблицу данными
+    offer.offer_items.forEach((item, index) => {
+        printContent += `
+            <tr>
+                <td style="padding: 2mm 1mm; text-align: center; vertical-align: top">${index + 1}</td>
+                <td style="padding: 2mm 1mm; text-align: left; vertical-align: top">
+                    <div style="font-weight: 500">${item.service_name}</div>
+                    ${item.memo ? `<div style="font-size: 14px; margin-top: 1mm;">${item.memo}</div>` : ''}
+                </td>
+                <td style="padding: 2mm 1mm; text-align: center; vertical-align: top">x ${item.quantity}</td>
+                <td style="padding: 2mm 1mm; text-align: right; vertical-align: top">${item.price} UZS</td>
+                <td style="padding: 2mm 1mm; text-align: right; vertical-align: top">${item.total} UZS</td>
+            </tr>`;
+    });
+
+    printContent += `
+                </tbody>
+            </table>
+
+            <div style="margin-top: 4mm; padding-top: 3mm; border-top: 1px dashed #000;">
+                <div style="display: flex; justify-content: space-between; margin: 1mm 0">
+                    <span>Jami:</span>
+                    <span>${offer.cost} UZS</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin: 1mm 0">
+                    <span>Chegirma:</span>
+                    <span>${offer.discount_amount} UZS</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin: 1mm 0; font-weight: bold">
+                    <span>To'lovga:</span>
+                    <span>${offer.final_cost} UZS</span>
+                </div>
+            </div>
+
+            <p style="text-align: center; margin: 5mm 0 2mm; font-size: 12px; color: #000; font-weight: bold;">
+                Xarid qilganingiz uchun rahmat!
+            </p>
+        </div>`;
+
+    // Открываем новое окно для печати
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html>
+            <head>
+                <title>Chek #${offer.id}</title>
+                <style>
+                    @media print {
+                        @page {
+                            margin: 2mm;
+                            size: auto;
+                        }
+                        body {
+                            margin: 0 !important;
+                            padding: 0 !important;
+                        }
+                    }
+                    body {
+                        margin: 0;
+                        padding: 0;
+                        -webkit-print-color-adjust: exact;
+                    }
+                </style>
+            </head>
+            <body>
+                ${printContent}
+            </body>
+        </html>
+    `);
+    printWindow.document.close();
+    
+    // Даем время на загрузку контента перед печатью
+    setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+    }, 100);
+}
 </script>
 @endsection 
