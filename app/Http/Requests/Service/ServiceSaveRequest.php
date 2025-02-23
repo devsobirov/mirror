@@ -22,6 +22,7 @@ class ServiceSaveRequest extends FormRequest
             'price' => 'required|numeric|min:0',
             'margin' => 'nullable|numeric|min:0',
             'active' => 'boolean',
+            'calculator_id' => 'nullable|string',
         ];
     }
 

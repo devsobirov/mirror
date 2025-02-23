@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'worker'])->group(function () {
     Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+    Route::get('/home', [App\Http\Controllers\HomeController::class, 'index']);
     Route::get('/worker', [App\Http\Controllers\HomeController::class, 'workerHome'])->name('worker.home');
 
     Route::get('profile', [ProfileController::class, 'show'])->name('profile.show');

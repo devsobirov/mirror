@@ -161,6 +161,7 @@
                                                 <tr>
                                                     <th style="width: 40px">#</th>
                                                     <th>Xizmat</th>
+                                                    <th style="min-width: 80px">O'lcham</th>
                                                     <th>Miqdori</th>
                                                     <th>Narx</th>
                                                     <th>Summa</th>
@@ -168,7 +169,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <template x-for="(item, index) in offerItems" :key="item.id">
+                                                <template x-for="(item, index) in offerItems" :key="item.inner_id">
                                                     <tr>
                                                         <td x-text="index + 1"></td>
                                                         <td>
@@ -182,8 +183,28 @@
                                                                 </a>
                                                                 <div>
                                                                     <span x-text="item.name"></span>
-                                                                    <small class="text-muted d-block" x-text="'1 ' + item.unit"></small>
+                                                                    <small class="text-muted d-block" x-text="getItemMemo(item)"></small>
                                                                 </div>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div>
+                                                                <template x-if="serviceHasCalculator(item)">
+                                                                    <div class="d-flex align-items-center">
+                                                                        <p x-show="!item.isEditingDimension" x-text="`${getSumDimensionAmount(item)} ${item.unit}`"></p>
+                                                                        <input type="number" 
+                                                                               class="form-control form-control-sm" 
+                                                                               style="min-width: 80px" 
+                                                                               x-show="item.isEditingDimension" 
+                                                                               x-model="item.dimension_amount" 
+                                                                               @blur="item.isEditingDimension = false" 
+                                                                               min="0" 
+                                                                               step="0.01">
+                                                                        <button type="button" @click.prevent="openCalculator(item)" class="btn btn-icon btn-sm btn-ghost-secondary mx-1">
+                                                                            <x-svg.calc class="icon"></x-svg.calc>
+                                                                        </button>
+                                                                    </div>
+                                                                </template>
                                                             </div>
                                                         </td>
                                                         <td>
@@ -193,7 +214,7 @@
                                                                    :value="item.quantity" 
                                                                    @input="updateQuantity(item.id, $event.target.value)"
                                                                    min="1"
-                                                                   step="0.001">
+                                                                   step="1">
                                                         </td>
                                                         <td>
                                                             <div class="d-flex align-items-center gap-2">
@@ -223,13 +244,12 @@
                                                                 </template>
                                                                 <button class="btn btn-icon btn-sm" 
                                                                         :class="item.isEditingPrice ? 'btn-success' : 'btn-ghost-secondary'"
-                                                                        @click="toggleEditPrice(item.id)">
+                                                                        @click.prevent="toggleEditPrice(item.id)">
                                                                     <template x-if="!item.isEditingPrice">
                                                                         <x-svg.pen class="icon"></x-svg.pen>
                                                                     </template>
                                                                     <template x-if="item.isEditingPrice">
                                                                         <x-svg.check class="icon"></x-svg.check>
-
                                                                     </template>
                                                                 </button>
                                                             </div>
@@ -325,7 +345,7 @@
                                                                        });
                                                                    });
                                                                }"
-                                                               required>
+                                                        >
                                                     </div>
                                                 </div>
                                             </div>
@@ -388,11 +408,59 @@
                 </div>
             </div>
         </form>
+        <!-- Модальное окно для калькулятора -->
+        <div class="modal fade" id="calculatorModal" tabindex="-1" role="dialog" aria-labelledby="calculatorModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="calculatorModalLabel">Kalkulyator</h5>
+                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true" @click="calcModal.hide()">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="form-group col-md-4">
+                                <label for="width">Eni (sm)</label>
+                                <input type="number" id="calc-width" x-model="calcItem.x" class="form-control" placeholder="Kenglikni kiriting" required>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="height">Bo'yi (sm)</label>
+                                <input type="number" id="calc-height" x-model="calcItem.y" class="form-control" placeholder="Balandlikni kiriting" required>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="quantity">Soni</label>
+                                <input type="number" id="calc-quantity" x-model="calcItem.quantity" class="form-control" placeholder="Miqdor kiriting" min="1" value="1">
+                            </div>
+                        </div>
+                        <!-- Добавляем поле для отображения dimension_amount -->
+                        <div class="row mt-3">
+                            <div class="form-group col-md-12">
+                                <label for="dimension-amount">O'lcham:</label>
+                                <div class="input-group">
+                                    <input type="text" id="dimension-amount" :value="calc() ? `${calcItem.dimension_amount} ${calcItem.unit} x ${calcItem.quantity} шт = ${calc()}` : calcItem.dimension_amount" class="form-control" readonly>
+                                    <span class="input-group-text" x-text="calcItem.unit"></span>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bekor qilish</button>
+                        <button type="button" class="btn btn-primary" :disabled="!calc()" @click.prevent="applyValues()">Qo'shish</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
 @endsection
 
 @section('custom_scripts')
 <script>
+    const calc_m2 = "{{\App\Enums\Service\ServiceCalculatorTypeEnum::SquareMeter->value}}";
+    const calc_perimeter = "{{\App\Enums\Service\ServiceCalculatorTypeEnum::Perimeter->value}}";
+    const calcModal = new bootstrap.Modal(document.getElementById('calculatorModal'));
     document.addEventListener('alpine:init', () => {
         Alpine.data('OfferFormData', () => ({
             services: [],         
@@ -403,6 +471,8 @@
             discount: 0,
             isEditingDiscount: false,
             isSubmitting: false,
+            calcItem: {
+            },
             client: {
                 name: '',
                 phone_number: '',
@@ -510,7 +580,7 @@
             getItemTotal(item) {
                 if (!item) return 0;
                 const price = item.custom_price || item.full_price;
-                return parseFloat((price * (item.quantity || 1)).toFixed(2));
+                return parseFloat((price * (item.quantity || 1) * (item.dimension_amount || 1)).toFixed(2));
             },
 
             getTotalSum() {
@@ -520,19 +590,23 @@
 
             addToOrder(service) {
                 console.log('Adding service:', service);
-                if (!this.isServiceInOrder(service.id)) {
-                    this.offerItems.push({
-                        id: service.id,
-                        name: service.name,
-                        unit: service.unit,
-                        image: service.image,
-                        full_price: service.full_price,
-                        custom_price: null,
-                        isEditingPrice: false,
-                        quantity: 1
-                    });
-                    console.log('Updated offerItems:', this.offerItems);
-                }
+                this.offerItems.push({
+                    inner_id: Math.random(),
+                    id: service.id,
+                    name: service.name,
+                    unit: service.unit,
+                    image: service.image,
+                    full_price: service.full_price,
+                    custom_price: null,
+                    isEditingPrice: false,
+                    quantity: 1,
+                    x: null,
+                    y: null,
+                    dimension_amount: 1,
+                    custom_amount: null,
+                    calculator: service.calculator
+                });
+                console.log('Updated offerItems:', this.offerItems);
             },
 
             isServiceInOrder(serviceId) {
@@ -542,7 +616,7 @@
 
             getAvailableServices(category) {
                 if (!category || !category.services) return [];
-                return category.services.filter(service => !this.isServiceInOrder(service.id));
+                return category.services;
             },
 
             getAvailableServicesCount(category) {
@@ -593,7 +667,10 @@
                     quantity: item.quantity,
                     price: item.custom_price || item.full_price,
                     original_price: item.full_price,
-                    cost: this.getItemTotal(item)
+                    cost: this.getItemTotal(item),
+                    x: item.x,
+                    y: item.y,
+                    dimension_amount: item.dimension_amount,
                 }));
             },
 
@@ -656,6 +733,69 @@
                 } finally {
                     this.isSubmitting = false;
                 }
+            },
+
+            serviceHasCalculator(item) {
+                // Проверяем, есть ли у услуги поле calculator
+                return item.calculator !== null && item.calculator !== undefined;
+            },
+            getItemMemo(item) {
+                let memo = item.dimension_amount + ' ' + item.unit;
+                if (item.x || item.y) {
+                    let x = item.x ? item.x : '?';
+                    let y = item.y ? item.y : '?';
+                    memo = `${x}sm x ${y} sm = ` + memo;
+                }
+                return memo;
+            },
+            getSumDimensionAmount(item) {
+                return item.custom_amount 
+                    ? parseFloat(item.custom_amount) 
+                    : (parseFloat(item.dimension_amount) * parseInt(item.quantity)).toFixed(2);
+            },
+            openCalculator(item) {
+                this.calcItem = { ...item }; // Клонируем объект item
+                calcModal.show(); // Открываем модальное окно
+            },
+            applyValues() {
+                let amount = this.calc();
+                if (amount) {
+                    let x = this.calcItem.x;
+                    let y = this.calcItem.y;
+                    let quantity = this.calcItem.quantity;
+                    // Найдите offerItem по this.calcItem.inner_id;
+                    const offerItem = this.offerItems.find(item => item.inner_id === this.calcItem.inner_id);
+                    if (offerItem) {
+                        offerItem.x = x;
+                        offerItem.y = y;
+                        offerItem.quantity = quantity;
+                        offerItem.dimension_amount = this.calcItem.dimension_amount; // Обновляем нужные поля
+                        calcModal.hide();
+                    }
+                    calcModal.hide(); // Закрываем модальное окно
+                }
+                return null;
+            },
+            calc() {
+                let width = this.calcItem.x;
+                let height = this.calcItem.y;
+                let quantity = this.calcItem.quantity;
+
+                if (width && height && quantity) {
+                    if (this.calcItem.calculator === calc_m2) {
+                        let dm = (width * height * 0.0001);
+                        this.calcItem.dimension_amount = dm.toFixed(2);
+                        return (dm * quantity).toFixed(2);
+                    } else if (this.calcItem.calculator === calc_perimeter) {
+                        let dm = (parseFloat(width) + parseFloat(height)) * 2 * 0.01;
+                        console.log(width, height, dm);
+                        
+                        this.calcItem.dimension_amount = dm.toFixed(2);
+                        return (dm * quantity).toFixed(2);
+                    }
+                    return null;
+                }
+                return null;
             }
         }));
     });     

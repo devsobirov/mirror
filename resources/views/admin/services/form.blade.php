@@ -52,6 +52,19 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+
+                        <div class="col-lg-4 mb-3">
+                            <div class="form-label">Kalkulyator turini tanlang</div>
+                            <select name="calculator_id" class="form-select" required>
+                                <option value="">Tanlang</option>
+                                @foreach(App\Enums\Service\ServiceCalculatorTypeEnum::list() as $value => $name)
+                                    <option value="{{$value}}" @selected($service->calculator_id === $value)>{{$name}}</option>
+                                @endforeach
+                            </select>
+                            @error('calculator_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-lg-4">

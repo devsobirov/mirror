@@ -19,6 +19,7 @@ class ServiceResource extends JsonResource
             'price' => $this->price,
             'full_price' => $this->full_price,
             'margin' => $this->margin,
+            'calculator' => $this->calculator_id ?: null
         ];
     }
 

@@ -22,6 +22,9 @@ class OfferItemResource extends JsonResource
             'total' => number_format($this->cost, 0, '.', ' '),
             'unit' => $this->service->unit,
             'has_discount' => $hasDiscount,
+            'x' => $this->x,
+            'y' => $this->y,
+            'dimention_amount' => $this->dimention_amount ?: 1
         ];
     }
 }
