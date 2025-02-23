@@ -243,8 +243,9 @@
                             <thead>
                                 <tr>
                                     <th>Xizmat</th>
-                                    <th>O'lchov birligi</th>
+                                    <th>O'lchov</th>
                                     <th class="text-end">Miqdori</th>
+                                    <th class="text-end">Jami</th>
                                     <th class="text-end">Narx</th>
                                     <th class="text-end">Summa</th>
                                 </tr>
@@ -252,15 +253,15 @@
                             <tbody id="services-list"></tbody>
                             <tfoot>
                                 <tr>
-                                    <td colspan="4" class="text-end"><strong>Jami:</strong></td>
+                                    <td colspan="5" class="text-end"><strong>Jami:</strong></td>
                                     <td class="text-end" id="total-cost"></td>
                                 </tr>
                                 <tr>
-                                    <td colspan="4" class="text-end"><strong>Chegirma:</strong></td>
+                                    <td colspan="5" class="text-end"><strong>Chegirma:</strong></td>
                                     <td class="text-end" id="discount-amount"></td>
                                 </tr>
                                 <tr>
-                                    <td colspan="4" class="text-end"><strong>To'lovga:</strong></td>
+                                    <td colspan="5" class="text-end"><strong>To'lovga:</strong></td>
                                     <td class="text-end" id="final-cost"></td>
                                 </tr>
                             </tfoot>
@@ -366,9 +367,12 @@
                                 ${item.service_image ? `<span class="avatar me-2" style="background-image: url(${item.service_image})"></span>` : ''}
                                 ${item.service_name}
                             </div>
+                            <small class="text-muted d-block">${item.memo}</small>
+                        </div>
                         </td>
-                        <td>${item.unit || '-'}</td>
+                        <td>${item.dimention_amount} ${item.unit || ''}</td>
                         <td class="text-end">${item.quantity}</td>
+                        <td>${item.total_amount}</td>
                         <td class="text-end">
                             ${item.has_discount 
                                 ? `<s class="text-muted">${item.original_price}</s><br>${item.price}`
@@ -382,9 +386,9 @@
             });
 
             // Yakunlarni to'ldirish (tayyor formatlangan qiymatlarni resursdan foydalanamiz)
-            document.getElementById('total-cost').textContent = offer.cost;
-            document.getElementById('discount-amount').textContent = offer.discount_amount;
-            document.getElementById('final-cost').textContent = offer.final_cost;
+            document.getElementById('total-cost').textContent = offer.cost + ' UZS';
+            document.getElementById('discount-amount').textContent = offer.discount_amount + ' UZS';
+            document.getElementById('final-cost').textContent = offer.final_cost + ' UZS';
 
         } catch (error) {
             console.error('Xato:', error);

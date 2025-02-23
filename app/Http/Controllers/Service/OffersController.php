@@ -70,7 +70,8 @@ class OffersController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Заказ успешно сохранен',
-                    'redirect' => route('offers.index')
+                    'redirect' => route('offers.index'),
+                    'req_data' => $request->validated()
                 ]);
             }
             

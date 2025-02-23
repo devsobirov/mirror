@@ -20,7 +20,7 @@ class SaveOfferRequest extends FormRequest
     {
         return [
             'client_name' => 'required|string|max:255',
-            'phone' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:255',
             'phone2' => 'nullable|string|max:255',
             'comment' => 'nullable|string',
             'status' => ['required', 'integer', Rule::in(array_keys(OfferStatusEnum::list()))],
@@ -31,6 +31,9 @@ class SaveOfferRequest extends FormRequest
             'offer_items.*.price' => 'required|numeric|min:0',
             'offer_items.*.original_price' => 'required|numeric|min:0',
             'offer_items.*.cost' => 'required|numeric|min:0',
+            'offer_items.*.x' => 'nullable',
+            'offer_items.*.y' => 'nullable',
+            'offer_items.*.dimension_amount' => 'numeric|nullable',
             'created_at' => 'nullable'
         ];
     }
@@ -84,7 +87,7 @@ class SaveOfferRequest extends FormRequest
             'offer_items.*.service_id.exists' => 'Tanlangan xizmat turi mavjud emas',
             'status.required' => 'Выберите статус заказа',
             'status.integer' => 'Некорректный формат статуса',
-            'status.in' => 'Выбран несуществующий статус',
+            'status.in' => 'Выбран несуществующий статус', 
         ];
     }
 }

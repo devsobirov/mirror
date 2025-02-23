@@ -484,8 +484,8 @@
             
             get isFormValid() {
                 return this.offerItems.length > 0 && 
-                       this.client.name && 
-                       this.client.phone_number;
+                       this.client.name; // && 
+                       //this.client.phone_number;
             },
             
             init() {
@@ -692,7 +692,6 @@
                         created_at: this.orderDate,
                         offer_items: this.prepareOfferItems()
                     });
-
                     const response = await fetch('{{ route('offers.save') }}', {
                         method: 'POST',
                         headers: {
@@ -718,7 +717,6 @@
                     
                     const result = await response.json();
                     console.log('Javob ma\'lumotlari:', result);
-
                     if (result.success) {
                         window.location.href = result.redirect || '{{ route('offers.index') }}';
                     } else {

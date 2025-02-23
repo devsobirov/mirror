@@ -19,4 +19,20 @@ class OfferItem extends Model
     {
         return $this->belongsTo(Service::class, 'service_id')->with('category');
     }
+
+    public function getMemoAttribute()
+    {
+        $unit = $this->service?->unit ?? '';
+        $dm = $this->dimension_amount ?: 1;
+
+        $memo = "$dm $unit";
+        if ($this->x || $this->y) {
+            $x = $this->x ?: '?';
+            $y = $this->y ?: '?';
+
+            $memo = "$x sm x $y sm = $memo";
+        }
+
+        return $memo;
+    }
 }
