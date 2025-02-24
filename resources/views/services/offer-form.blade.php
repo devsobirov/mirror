@@ -212,9 +212,9 @@
                                                                    class="form-control form-control-sm" 
                                                                    style="width: 80px" 
                                                                    :value="item.quantity" 
-                                                                   @input="updateQuantity(item.id, $event.target.value)"
+                                                                   @input="updateQuantity(item, $event.target.value)"
                                                                    min="1"
-                                                                   step="1">
+                                                                   :step="serviceHasCalculator(item) ? 1 : 0.01">
                                                         </td>
                                                         <td>
                                                             <div class="d-flex align-items-center gap-2">
@@ -238,13 +238,13 @@
                                                                            class="form-control form-control-sm" 
                                                                            style="width: 120px"
                                                                            :value="item.custom_price || item.full_price"
-                                                                           @keyup.enter="saveCustomPrice(item.id, $event.target.value)"
-                                                                           @keyup.esc="cancelEditPrice(item.id)"
-                                                                           @blur="saveCustomPrice(item.id, $event.target.value)">
+                                                                           @keyup.enter="saveCustomPrice(item.inner_id, $event.target.value)"
+                                                                           @keyup.esc="cancelEditPrice(item.inner_id)"
+                                                                           @blur="saveCustomPrice(item.inner_id, $event.target.value)">
                                                                 </template>
                                                                 <button class="btn btn-icon btn-sm" 
                                                                         :class="item.isEditingPrice ? 'btn-success' : 'btn-ghost-secondary'"
-                                                                        @click.prevent="toggleEditPrice(item.id)">
+                                                                        @click.prevent="toggleEditPrice(item.inner_id)">
                                                                     <template x-if="!item.isEditingPrice">
                                                                         <x-svg.pen class="icon"></x-svg.pen>
                                                                     </template>
@@ -256,7 +256,7 @@
                                                         </td>
                                                         <td x-text="getItemTotal(item) + ' UZS'"></td>
                                                         <td>
-                                                            <button class="btn btn-sm btn-danger" @click="removeItem(item.id)">
+                                                            <button class="btn btn-sm btn-danger" @click="removeItem(item.inner_id)">
                                                                 <x-svg.trash class="icon"></x-svg.trash>
                                                             </button>
                                                         </td>
@@ -525,27 +525,29 @@
                 this.isSearching = false;
             },
 
-            updateQuantity(id, quantity) {
+            updateQuantity(item, quantity) {
+                console.log(typeof quantity, quantity);  
+                const numQuantity = parseFloat(quantity.trim().replace(",", "."));
+                let id = item.inner_id;
                 console.log('updateQuantity:', id, quantity);
-                const numQuantity = parseFloat(quantity);
                 if (numQuantity <= 0) {
                     this.removeItem(id);
                     return;
                 }
                 
-                const index = this.offerItems.findIndex(item => item.id === id);
+                const index = this.offerItems.findIndex(item => item.inner_id === id);
                 if (index !== -1) {
                     this.offerItems[index].quantity = numQuantity;
                 }
             },
 
-            removeItem(id) {
+            removeItem(inner_id) {
                 console.log('removeItem:', id);
-                this.offerItems = this.offerItems.filter(item => item.id !== id);
+                this.offerItems = this.offerItems.filter(item => item.inner_id !== inner_id);
             },
 
-            toggleEditPrice(id) {
-                const item = this.offerItems.find(item => item.id === id);
+            toggleEditPrice(inner_id) {
+                const item = this.offerItems.find(item => item.inner_id === inner_id);
                 if (item) {
                     if (item.isEditingPrice) {
                         item.isEditingPrice = false;
@@ -557,8 +559,8 @@
                 }
             },
 
-            saveCustomPrice(id, value) {
-                const item = this.offerItems.find(item => item.id === id);
+            saveCustomPrice(inner_id, value) {
+                const item = this.offerItems.find(item => item.inner_id === inner_id);
                 if (item) {
                     const newPrice = parseFloat(value);
                     if (newPrice && newPrice > 0) {
@@ -570,8 +572,8 @@
                 }
             },
 
-            cancelEditPrice(id) {
-                const item = this.offerItems.find(item => item.id === id);
+            cancelEditPrice(inner_id) {
+                const item = this.offerItems.find(item => item.inner_id === inner_id);
                 if (item) {
                     item.isEditingPrice = false;
                 }
