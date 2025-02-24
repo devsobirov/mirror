@@ -159,4 +159,9 @@ class OffersController extends Controller
 
         return view('services.offer-copy-form', compact('categories', 'initialData'));
     }
+
+    public function getPrint(Offer $offer)
+    {
+        return view('prints.offer', compact('offer'))->render();
+    }
 }

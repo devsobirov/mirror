@@ -12,6 +12,7 @@ use App\Http\Controllers\Service\OffersController;
 use App\Http\Controllers\Warehouse\ExpenseController;
 use App\Http\Controllers\Warehouse\IncomeController;
 use App\Http\Controllers\Warehouse\MainController;
+use App\Http\Controllers\PrintSettingController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'worker'])->group(function () {
@@ -50,6 +51,7 @@ Route::middleware(['auth', 'worker'])->group(function () {
         Route::put('/{offer}/update-status', 'updateStatus')->name('update-status');
         Route::delete('/{offer}', 'destroy')->name('destroy');
         Route::get('/copy/{offer}', 'copy')->name('copy');
+        Route::get('/getPrint/{offer}', 'getPrint')->name('get-print');
     });
 
     Route::group(['prefix' => 'finance', 'as' => 'finance.'], function () {
@@ -94,6 +96,9 @@ Route::middleware(['auth', 'worker'])->group(function () {
             Route::get('/form/{service?}', 'serviceForm')->name('form');
             Route::post('/save/{service?}', 'serviceSave')->name('save');
         });
+
+        Route::get('/print-settings', [PrintSettingController::class, 'show'])->name('print-settings.show');
+        Route::post('/print-settings', [PrintSettingController::class, 'save'])->name('print-settings.save');
     });
 });
 
