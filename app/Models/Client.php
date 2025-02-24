@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Finance\Debt;
 use App\Models\Finance\Payment;
 use App\Traits\HasPhoneNumbers;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -38,5 +39,11 @@ class Client extends Model
         }
         
         return $value;
+    }
+
+    public function scopeSearch(Builder $query, $search = '') 
+    {
+        $search = trim($search);
+        $query->when($search, fn($q) => $q->where('name', 'like', "%$search%")->orWhere('phone', 'like', "%$search%")->orWhere('phone2', 'like', "%$search%"));
     }
 }

@@ -8,7 +8,7 @@
                 Mijozlar ({{$items->total()}})
             </h2>
             <div class="col-auto ms-auto d-print-none">
-                <form action="{{route('sklad.expenses.index')}}" class="d-md-flex d-sm-block align-items-center gap-1">
+                <form action="{{route('finance.clients.index')}}" class="d-md-flex d-sm-block align-items-center gap-1">
                     <input type="search" class="form-control d-inline-block w-12 me-1" minlength="2" placeholder="Mijoz ismi, tel ..." name="search_client" value="{{request('search_client')}}">
                     <button class="btn me-1 btn-icon btn-azure" title="Izlash"><x-svg.search></x-svg.search></button>
                     <a href="#" data-bs-toggle="modal" data-bs-target="#client-" class="btn btn-primary">Yangi kiritish</a>

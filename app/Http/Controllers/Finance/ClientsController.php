@@ -12,6 +12,7 @@ class ClientsController extends Controller
     public function index()
     {
         $items = Client::query()
+            ->search(request('search_client'))
             ->withSum('debts as debt_sum', 'amount')
             ->withAvg(['debts as rating' => fn($q) => $q->whereNotNull('rating')], 'rating')
             ->withSum('payments as paid_sum', 'amount')
