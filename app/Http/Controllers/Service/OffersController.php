@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Service;
 
 use App\Http\Controllers\Controller;
+use App\Models\PrintSetting;
 use App\Models\Services\Offer;
 use Illuminate\Http\Request;
 use App\Models\Services\ServiceCategory as Category;
+use App\Http\Resources\Offers\OfferItemResource;
 use App\Http\Resources\Services\CategoryWithServicesResource;
 use App\Http\Requests\Offers\SaveOfferRequest;
 use App\Http\Resources\Offers\OfferResource;
@@ -162,6 +164,17 @@ class OffersController extends Controller
 
     public function getPrint(Offer $offer)
     {
-        return view('prints.offer', compact('offer'))->render();
+        $settings = PrintSetting::first() ?? new PrintSetting();
+       // Загружаем необходимые отношения
+        $offer->load(['offerItems.service', 'manager']);
+        $items = $offer->offerItems;
+    
+        // Преобразуем $offer в массив с помощью OfferResource
+        $offer = (new OfferResource($offer))->toArray(request());
+        $offer['offer_items'] = [];
+        foreach($items as $item) {
+            $offer['offer_items'][] = (new OfferItemResource($item))->toArray(request());
+        }
+        return view('prints.offer', compact('offer', 'settings'));
     }
 }
