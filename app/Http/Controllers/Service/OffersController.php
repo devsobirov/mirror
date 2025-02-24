@@ -106,7 +106,7 @@ class OffersController extends Controller
 
     public function destroy(Offer $offer)
     {
-        if ($offer->status !== OfferStatusEnum::Draft->value) {
+        if ($offer->status !== OfferStatusEnum::Draft->value && !auth()->user()->isAdmin()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Можно удалять только черновики заказов'

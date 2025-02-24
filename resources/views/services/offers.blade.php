@@ -148,7 +148,7 @@
                                                     <path d="M16 5l3 3"></path>
                                                 </svg>
                                             </a>
-                                            @if(!$offer->status || $offer->status === \App\Enums\Offer\OfferStatusEnum::Draft->value)
+                                            @if(!$offer->status || $offer->status === \App\Enums\Offer\OfferStatusEnum::Draft->value || auth()->user()->isAdmin())
                                                 <a href="#" 
                                                    class="btn btn-icon" 
                                                    title="O'chirish"
