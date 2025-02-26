@@ -5,6 +5,7 @@ namespace App\Models\Services;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Service extends Model
 {
@@ -44,5 +45,10 @@ class Service extends Model
     public function getImageUrlAttribute(): string
     {
         return asset($this->image ?: 'assets/images/no-image.jpg');
+    }
+
+    public function subServices(): BelongsToMany
+    {
+        return $this->belongsToMany(Service::class, 'service_subservices', 'service_id', 'subservice_id');
     }
 }

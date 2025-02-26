@@ -168,101 +168,108 @@
                                                     <th style="width: 40px"></th>
                                                 </tr>
                                             </thead>
+                                            <template x-for="(baseItem, index) in offerItems" :key="Math.random()">
                                             <tbody>
-                                                <template x-for="(item, index) in offerItems" :key="item.inner_id">
+                                                <template x-for="(item, i) in getItemAsGroup(baseItem)" :key="item.inner_id">
                                                     <tr>
-                                                        <td x-text="index + 1"></td>
-                                                        <td>
-                                                            <div class="d-flex align-items-center gap-2">
-                                                                <a :data-fslightbox="'order' + item.id" 
-                                                                   :href="item.image"
-                                                                   x-init="refreshFsLightbox()">
-                                                                    <span class="avatar" 
-                                                                          :style="'background-image: url(' + item.image + ')'">
-                                                                    </span>
-                                                                </a>
-                                                                <div>
-                                                                    <span x-text="item.name"></span>
-                                                                    <small class="text-muted d-block" x-text="getItemMemo(item)"></small>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            <div>
-                                                                <template x-if="serviceHasCalculator(item)">
-                                                                    <div class="d-flex align-items-center">
-                                                                        <p x-show="!item.isEditingDimension" x-text="`${getSumDimensionAmount(item)} ${item.unit}`"></p>
-                                                                        <input type="number" 
-                                                                               class="form-control form-control-sm" 
-                                                                               style="min-width: 80px" 
-                                                                               x-show="item.isEditingDimension" 
-                                                                               x-model="item.dimension_amount" 
-                                                                               @blur="item.isEditingDimension = false" 
-                                                                               min="0" 
-                                                                               step="0.01">
-                                                                        <button type="button" @click.prevent="openCalculator(item)" class="btn btn-icon btn-sm btn-ghost-secondary mx-1">
-                                                                            <x-svg.calc class="icon"></x-svg.calc>
-                                                                        </button>
-                                                                    </div>
-                                                                </template>
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            <input type="number" 
-                                                                   class="form-control form-control-sm" 
-                                                                   style="width: 80px" 
-                                                                   :value="item.quantity" 
-                                                                   @input="updateQuantity(item, $event.target.value)"
-                                                                   min="1"
-                                                                   :step="serviceHasCalculator(item) ? 1 : 0.01">
-                                                        </td>
-                                                        <td>
-                                                            <div class="d-flex align-items-center gap-2">
-                                                                <template x-if="!item.isEditingPrice">
+                                                    <td x-text="(item.inner_id == baseItem.inner_id) ? (index + 1) : ''"></td>
+                                                            <td>
+                                                                <template x-if="!item.is_summary">
+                                                                <div class="d-flex align-items-center gap-2">
+                                                                    <a :data-fslightbox="'order' + item.id" 
+                                                                    :href="item.image"
+                                                                    x-init="refreshFsLightbox()">
+                                                                        <span class="avatar" 
+                                                                            :style="'background-image: url(' + item.image + ')'">
+                                                                        </span>
+                                                                    </a>
                                                                     <div>
-                                                                        <template x-if="item.custom_price">
-                                                                            <div class="d-flex flex-column">
-                                                                                <small class="text-decoration-line-through text-muted" 
-                                                                                       x-text="item.full_price + ' UZS'">
-                                                                                </small>
-                                                                                <span x-text="item.custom_price + ' UZS'"></span>
-                                                                            </div>
-                                                                        </template>
-                                                                        <template x-if="!item.custom_price">
-                                                                            <span x-text="item.full_price + ' UZS'"></span>
-                                                                        </template>
+                                                                        <span x-text="item.name"></span>
+                                                                        <small class="text-muted d-block" x-text="getItemMemo(item)"></small>
                                                                     </div>
+                                                                </div>
                                                                 </template>
-                                                                <template x-if="item.isEditingPrice">
-                                                                    <input type="number" 
-                                                                           class="form-control form-control-sm" 
-                                                                           style="width: 120px"
-                                                                           :value="item.custom_price || item.full_price"
-                                                                           @keyup.enter="saveCustomPrice(item.inner_id, $event.target.value)"
-                                                                           @keyup.esc="cancelEditPrice(item.inner_id)"
-                                                                           @blur="saveCustomPrice(item.inner_id, $event.target.value)">
-                                                                </template>
-                                                                <button class="btn btn-icon btn-sm" 
-                                                                        :class="item.isEditingPrice ? 'btn-success' : 'btn-ghost-secondary'"
-                                                                        @click.prevent="toggleEditPrice(item.inner_id)">
+                                                            </td>
+                                                            <td>
+                                                                <div x-show="!item.is_summary">
+                                                                    <template x-if="serviceHasCalculator(item)">
+                                                                        <div class="d-flex align-items-center">
+                                                                            <p x-show="!item.isEditingDimension" x-text="`${getSumDimensionAmount(item)} ${item.unit}`"></p>
+                                                                            <input type="number" 
+                                                                                class="form-control form-control-sm" 
+                                                                                style="min-width: 80px" 
+                                                                                x-show="item.isEditingDimension" 
+                                                                                x-model="item.dimension_amount" 
+                                                                                @blur="item.isEditingDimension = false" 
+                                                                                min="0" 
+                                                                                step="0.01">
+                                                                            <button type="button" @click.prevent="openCalculator(item)" class="btn btn-icon btn-sm btn-ghost-secondary mx-1">
+                                                                                <x-svg.calc class="icon"></x-svg.calc>
+                                                                            </button>
+                                                                        </div>
+                                                                    </template>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <input type="number" x-show="!item.is_summary"
+                                                                    class="form-control form-control-sm" 
+                                                                    style="width: 80px" 
+                                                                    :value="item.quantity" 
+                                                                    @input="updateQuantity(item, $event.target.value)"
+                                                                    min="1"
+                                                                    :step="(serviceHasCalculator(item) || item.parent_inner_id) ? 1 : 0.01">
+                                                            </td>
+                                                            <td>
+                                                                <template x-if="!item.is_summary">
+                                                                <div class="d-flex align-items-center gap-2">
                                                                     <template x-if="!item.isEditingPrice">
-                                                                        <x-svg.pen class="icon"></x-svg.pen>
+                                                                        <div>
+                                                                            <template x-if="item.custom_price">
+                                                                                <div class="d-flex flex-column">
+                                                                                    <small class="text-decoration-line-through text-muted" 
+                                                                                        x-text="item.full_price + ' UZS'">
+                                                                                    </small>
+                                                                                    <span x-text="item.custom_price + ' UZS'"></span>
+                                                                                </div>
+                                                                            </template>
+                                                                            <template x-if="!item.custom_price">
+                                                                                <span x-text="item.full_price + ' UZS'"></span>
+                                                                            </template>
+                                                                        </div>
                                                                     </template>
                                                                     <template x-if="item.isEditingPrice">
-                                                                        <x-svg.check class="icon"></x-svg.check>
+                                                                        <input type="number" 
+                                                                            class="form-control form-control-sm" 
+                                                                            style="width: 120px"
+                                                                            :value="item.custom_price || item.full_price"
+                                                                            @keyup.enter="saveCustomPrice(item, $event.target.value)"
+                                                                            @keyup.esc="cancelEditPrice(item)"
+                                                                            @blur="saveCustomPrice(item, $event.target.value)">
                                                                     </template>
+                                                                    <button class="btn btn-icon btn-sm" 
+                                                                            :class="item.isEditingPrice ? 'btn-success' : 'btn-ghost-secondary'"
+                                                                            @click.prevent="toggleEditPrice(item.inner_id, item.parent_inner_id ? item : null)">
+                                                                        <template x-if="!item.isEditingPrice">
+                                                                            <x-svg.pen class="icon"></x-svg.pen>
+                                                                        </template>
+                                                                        <template x-if="item.isEditingPrice">
+                                                                            <x-svg.check class="icon"></x-svg.check>
+                                                                        </template>
+                                                                    </button>
+                                                                </div>
+                                                                </template>
+                                                            </td>
+                                                            <td x-text="(item.is_summary ? item.cost : getItemTotal(item)) + ' UZS'"></td>
+                                                            <td>
+                                                                <button x-show="!item.is_summary" class="btn btn-sm btn-danger" 
+                                                                    @click="item.parent_inner_id ? removeSubItem(item, baseItem) : removeItem(item.inner_id)">
+                                                                    <x-svg.trash class="icon"></x-svg.trash>
                                                                 </button>
-                                                            </div>
-                                                        </td>
-                                                        <td x-text="getItemTotal(item) + ' UZS'"></td>
-                                                        <td>
-                                                            <button class="btn btn-sm btn-danger" @click="removeItem(item.inner_id)">
-                                                                <x-svg.trash class="icon"></x-svg.trash>
-                                                            </button>
-                                                        </td>
+                                                            </td>
                                                     </tr>
                                                 </template>
                                             </tbody>
+                                            </template>
                                             <tfoot>
                                                 <tr>
                                                     <td colspan="4" class="text-end"><strong>Summa:</strong></td>
@@ -402,6 +409,7 @@
                                         </div>
                                     </div>
                                 </template>
+                                </template>
                             </div>
                         </div>
                     </form>
@@ -441,9 +449,93 @@
                                     <input type="text" id="dimension-amount" :value="calc() ? `${calcItem.dimension_amount} ${calcItem.unit} x ${calcItem.quantity} шт = ${calc()}` : calcItem.dimension_amount" class="form-control" readonly>
                                     <span class="input-group-text" x-text="calcItem.unit"></span>
                                 </div>
-                                
                             </div>
                         </div>
+
+                        <div>
+                        <!-- Sub-services section -->
+                        <template x-if="calcItem.sub_services && calcItem.sub_services.length > 0">
+                            <div class="mt-4">
+                                <h6 class="mb-3">Qo'shimcha xizmatlar</h6>
+                                <div class="list-group">
+                                    <template x-for="subService in getSubServices(calcItem)" :key="subService.inner_id">
+                                        <div class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <div class="d-flex align-items-center">
+                                                    <span class="avatar me-3" 
+                                                          :style="'background-image: url(' + subService.image + ')'">
+                                                    </span>
+                                                    <div>
+                                                        <span x-text="subService.name"></span>
+                                                        <small class="text-muted d-block" x-text="'1 ' + subService.unit + ' uchun'"></small>
+                                                    </div>
+                                                </div>
+                                                <button class="btn btn-primary btn-sm d-flex align-items-center" 
+                                                        @click.prevent="addSubItem(subService)"
+                                                        :disabled="!calc()">
+                                                    <span class="me-2" x-text="subService.full_price + ' UZS'"></span>
+                                                    <span class="d-flex">
+                                                        <x-svg.plus class="icon"></x-svg.plus>
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                        </div>
+                        
+                        <template x-if="calcItem.subItems && calcItem.subItems.length > 0" >
+                            <div>
+                            <template x-for="subItem in calcItem.subItems" :key="subItem.inner_id">
+                            <div class="row mt-3">
+                                <div class="row col-lg-12 justify-content-between align-items-center">
+                                    <div class="col-6 d-flex align-items-center">
+                                        <span class="avatar me-3" 
+                                                :style="'background-image: url(' + subItem.image + ')'">
+                                        </span>
+                                        <div>
+                                            <span x-text="subItem.name"></span>
+                                            <small class="text-muted d-block" x-text="'1 ' + subItem.unit + ' uchun'"></small>
+                                        </div>
+                                    </div>
+                                    <button class="col-3 btn btn-danger btn-sm d-flex align-items-center" @click.prevent="removeSubService(subItem, calcItem)">
+                                        <span class="me-2" x-text="getItemTotal(subItem) + ' UZS'"></span>
+                                        <span class="d-flex">
+                                            <x-svg.trash class="icon"></x-svg.plus>
+                                        </span>
+                                    </button>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label :for="'sub-width-' + subItem.id">Eni (sm)</label>
+                                    <input type="number" :id="'sub-width-' + subItem.id" 
+                                            x-model="subItem.x" class="form-control" 
+                                            placeholder="Kenglikni kiriting">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label :for="'sub-height-' + subItem.id">Bo'yi (sm)</label>
+                                    <input type="number" :id="'sub-height-' + subItem.id" 
+                                            x-model="subItem.y" class="form-control" 
+                                            placeholder="Balandlikni kiriting">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label :for="'sub-quantity-' + subItem.id">Soni</label>
+                                    <input type="number" :id="'sub-quantity-' + subItem.id" 
+                                            x-model="subItem.quantity" class="form-control" 
+                                            placeholder="Miqdor kiriting" min="1" value="1">
+                                </div>
+                                <div class="form-group col-md-12">
+                                    <label for="dimension-amount">O'lcham:</label>
+                                    <div class="input-group">
+                                        <input type="text" :value="calcByItem(subItem) ? `${subItem.dimension_amount} ${subItem.unit} x ${subItem.quantity} шт = ${calcByItem(subItem)}` : subItem.dimension_amount" class="form-control" readonly>
+                                        <span class="input-group-text" x-text="subItem.unit"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            </template>
+                            </div>
+                        </template>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bekor qilish</button>
@@ -461,6 +553,27 @@
     const calc_m2 = "{{\App\Enums\Service\ServiceCalculatorTypeEnum::SquareMeter->value}}";
     const calc_perimeter = "{{\App\Enums\Service\ServiceCalculatorTypeEnum::Perimeter->value}}";
     const calcModal = new bootstrap.Modal(document.getElementById('calculatorModal'));
+    const calcByItem = function(calcItem) {
+        let width = calcItem.x;
+        let height = calcItem.y;
+        let quantity = calcItem.quantity;
+
+        if (width && height && quantity) {
+            if (calcItem.calculator === calc_m2) {
+                let dm = (width * height * 0.0001);
+                calcItem.dimension_amount = dm.toFixed(2);
+                return (dm * quantity).toFixed(2);
+            } else if (calcItem.calculator === calc_perimeter) {
+                let dm = (parseFloat(width) + parseFloat(height)) * 2 * 0.01;
+                console.log(width, height, dm);
+                
+                calcItem.dimension_amount = dm.toFixed(2);
+                return (dm * quantity).toFixed(2);
+            }
+            return null;
+        }
+        return null;
+    }
     document.addEventListener('alpine:init', () => {
         Alpine.data('OfferFormData', () => ({
             services: [],         
@@ -481,6 +594,26 @@
             },
             status: {{ \App\Enums\Offer\OfferStatusEnum::Draft->value }},
             orderDate: '',
+            
+            addSubItem(subService) {
+                const parentItem = this.offerItems.find(item => item.inner_id === this.calcItem.inner_id);
+                    if (!parentItem) return;
+
+                    subService.inner_id = Math.random(),
+                    subService.full_price = subService.full_price,
+                    subService.custom_price = null,
+                    subService.isEditingPrice = false,
+                    subService.quantity =  this.calcItem.quantity || subService.quantity || 1,
+                    subService.x = this.calcItem.x || subService.x,
+                    subService.y = this.calcItem.y || subService.y,
+                    subService.calculator = subService.calculator
+                    subService.dimension_amount = calcByItem(subService);
+                    subService.parent_inner_id = this.calcItem.inner_id;
+                    if (!this.calcItem.subItems) {
+                        this.calcItem.subItems = [];
+                    }
+                    this.calcItem.subItems.push(subService);
+            },
             
             get isFormValid() {
                 return this.offerItems.length > 0 && 
@@ -546,21 +679,22 @@
                 this.offerItems = this.offerItems.filter(item => item.inner_id !== inner_id);
             },
 
-            toggleEditPrice(inner_id) {
-                const item = this.offerItems.find(item => item.inner_id === inner_id);
+            toggleEditPrice(inner_id, subItem = null) {
+                let item = subItem ? subItem : this.offerItems.find(item => item.inner_id === inner_id);
                 if (item) {
                     if (item.isEditingPrice) {
                         item.isEditingPrice = false;
                     } else {
                         // Boshqa elementlar uchun tahrirni tozalash
-                        this.offerItems.forEach(i => i.isEditingPrice = false);
+                        if (!subItem) {
+                            this.offerItems.forEach(i => i.isEditingPrice = false);
+                        }
                         item.isEditingPrice = true;
                     }
                 }
             },
 
-            saveCustomPrice(inner_id, value) {
-                const item = this.offerItems.find(item => item.inner_id === inner_id);
+            saveCustomPrice(item, value) {
                 if (item) {
                     const newPrice = parseFloat(value);
                     if (newPrice && newPrice > 0) {
@@ -572,8 +706,8 @@
                 }
             },
 
-            cancelEditPrice(inner_id) {
-                const item = this.offerItems.find(item => item.inner_id === inner_id);
+            cancelEditPrice(item) {
+                //const item = this.offerItems.find(item => item.inner_id === inner_id);
                 if (item) {
                     item.isEditingPrice = false;
                 }
@@ -584,15 +718,20 @@
                 const price = item.custom_price || item.full_price;
                 return parseFloat((price * (item.quantity || 1) * (item.dimension_amount || 1)).toFixed(2));
             },
-
+            getItemSum(item) {
+                const price = this.getItemTotal(item);
+                if (item.subItems.length) {
+                    return price + item.subItems.reduce((sum, subItem) => sum + this.getItemTotal(subItem), 0);
+                }
+                return price;
+            },
             getTotalSum() {
                 if (!this.offerItems.length) return 0;
                 return this.offerItems.reduce((sum, item) => sum + this.getItemTotal(item), 0);
             },
-
-            addToOrder(service) {
+            addToOrder(service, parentInnerId = null) {
                 console.log('Adding service:', service);
-                this.offerItems.push({
+                const newItem = {
                     inner_id: Math.random(),
                     id: service.id,
                     name: service.name,
@@ -606,14 +745,13 @@
                     y: null,
                     dimension_amount: 1,
                     custom_amount: null,
-                    calculator: service.calculator
-                });
+                    calculator: service.calculator,
+                    parent_inner_id: parentInnerId,
+                    sub_services: service.sub_services || [],
+                    subItems: []
+                };
+                this.offerItems.push(newItem);
                 console.log('Updated offerItems:', this.offerItems);
-            },
-
-            isServiceInOrder(serviceId) {
-                if (!serviceId) return false;
-                return this.offerItems.some(item => item.id === serviceId);
             },
 
             getAvailableServices(category) {
@@ -737,7 +875,7 @@
 
             serviceHasCalculator(item) {
                 // Проверяем, есть ли у услуги поле calculator
-                return item.calculator !== null && item.calculator !== undefined;
+                return !item.parent_inner_id && item.calculator !== null && item.calculator !== undefined;
             },
             getItemMemo(item) {
                 let memo = item.dimension_amount + ' ' + item.unit;
@@ -770,6 +908,7 @@
                         offerItem.y = y;
                         offerItem.quantity = quantity;
                         offerItem.dimension_amount = this.calcItem.dimension_amount; // Обновляем нужные поля
+                        offerItem.subItems = this.calcItem.subItems;
                         calcModal.hide();
                     }
                     calcModal.hide(); // Закрываем модальное окно
@@ -796,6 +935,33 @@
                     return null;
                 }
                 return null;
+            },
+            getSubServices(item) {
+                const services = item.sub_services || [];
+                const subItems = item.subItems || [];
+                if (services && services.length > 0) {
+                    if (subItems && subItems.length > 0) {
+                        return services.filter(service => {
+                            return !subItems.find(subItem => subItem.id === service.id);
+                        })
+                    }
+                }
+                return services;
+            },
+            removeSubItem(subItem, item) {
+                this.removeSubService(subItem, item);
+            },
+            removeSubService(subItem, item) {
+                if (item && item.subItems) {
+                    item.subItems = item.subItems.filter(sub => sub.id !== subItem.id);
+                }
+            },
+            getItemAsGroup(item) {
+                let group = [item, ...item.subItems];
+                if(group.length > 1) {
+                    group.push({is_summary: true, 'cost' : this.getItemSum(item), inner_id: Math.random(), parent_inner_id: item.inner_id});
+                };
+                return group;
             }
         }));
     });     

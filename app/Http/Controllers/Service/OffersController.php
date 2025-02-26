@@ -55,7 +55,7 @@ class OffersController extends Controller
     public function form()
     {
         $categories = Category::query()
-            ->with(['services' => fn($q) => $q->where('active', true)])
+            ->with(['services' => fn($q) => $q->where('active', true)->with('subServices')])
             ->whereHas('services')
             ->orderBy('id')
             ->get();

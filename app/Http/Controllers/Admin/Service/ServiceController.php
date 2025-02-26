@@ -45,7 +45,16 @@ class ServiceController extends Controller
     public function serviceForm(?Service $service)
     {
         $categories = ServiceCategory::select('id', 'title')->get();
-        return view('admin.services.form', compact('service', 'categories'));
+        $availableServices = [];
+        if ($service->exists) {
+            $availableServices = Service::where('id', '!=', $service->id)
+                ->where(function($query) use ($service) {
+                    $query->where('is_sub_service', true)
+                          ->orWhereIn('id', $service->subServices->pluck('id'));
+                })
+                ->get();
+        }
+        return view('admin.services.form', compact('service', 'categories', 'availableServices'));
     }
 
     public function serviceSave(ServiceSaveRequest $request, ?Service $service)
@@ -54,6 +63,10 @@ class ServiceController extends Controller
         $data['image'] = $this->saveImage($request->file('image')) ?? $service->image;
         $service->fill($data);
         $service->save();
+
+        if ($service->exists && $request->has('sub_services')) {
+            $service->subServices()->sync($request->input('sub_services', []));
+        }
         return redirect()->route('admin.services.form', ['service' => $service->id])
             ->with('success', 'Muvaffaqiyatli saqlandi');
     }

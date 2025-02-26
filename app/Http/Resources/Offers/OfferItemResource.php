@@ -29,7 +29,8 @@ class OfferItemResource extends JsonResource
             'dimention_amount' => $this->dimention_amount ?: 1,
             'total_amount' => ($dm != 1 ? round($dm * $this->quantity, 2) : $this->quantity) . " " . $this->service->unit,
             'calculator' => $this->service?->calculator_id,
-            'memo' => $this->memo
+            'memo' => $this->memo,
+            'sub_items' => $this->subItems->isNotEmpty() ? self::collection($this->subItems): []
         ];
     }
 }

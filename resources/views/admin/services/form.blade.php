@@ -90,16 +90,45 @@
                     </div>
 
                     <div class="mb-3 row">
-                        <div class="mx-auto w-100">
-                            <div class="mb-3">
-                                <label class="form-check form-switch">
-                                    <input value="1" @if($service->active === null || $service->active) checked @endif name="active" class="form-check-input" type="checkbox">
-                                    <span class="form-check-label">Aktiv</span>
-                                </label>
-                            </div>
+                        <div class="col-lg-4 mb-3">
+                            <label class="form-check form-switch">
+                                <input value="1" @if($service->active === null || $service->active) checked @endif name="active" class="form-check-input" type="checkbox">
+                                <span class="form-check-label">Aktiv</span>
+                            </label>
+                        </div>
+                        <div class="col-lg-4 mb-3">
+                            <label class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="is_sub_service" @checked($service->is_sub_service) value="1">
+                                <span class="form-check-label">Qo'shimcha xizmat bo'la oladi</span>
+                            </label>
                         </div>
                     </div>
-                    <div class="row mb-3">
+                    @if(count($availableServices))
+                    <div class="col-lg-12 mb-3">
+                            <div class="form-label">Qo'shimcha xizmatlar</div>
+                            <div class="form-selectgroup form-selectgroup-boxes d-flex">
+                                @foreach($availableServices as $subService)
+                                    <label class="form-selectgroup-item">
+                                        <input type="checkbox" name="sub_services[]" value="{{ $subService->id }}" class="form-selectgroup-input"
+                                            @checked($service->subServices->contains($subService->id))>
+                                        <div class="form-selectgroup-label d-flex align-items-center p-3">
+                                            <div class="me-3">
+                                                <span class="form-selectgroup-check"></span>
+                                            </div>
+                                            <div>
+                                                <span class="avatar me-2" style="background-image: url({{ $subService->image_url }})"></span>
+                                                {{ $subService->name }}
+                                            </div>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+                            @error('sub_services')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        @endif
+                        <div class="row mb-3">
                         <div class="col-md-6">
                             <div class="card">
                                 <div class="card-body">

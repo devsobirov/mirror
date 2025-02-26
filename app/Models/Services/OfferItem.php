@@ -9,6 +9,12 @@ class OfferItem extends Model
 {
     public $timestamps = false;
     protected $guarded = [];
+    protected $with = ['subItems'];
+
+    public function subItems()
+    {
+        return $this->hasMany(self::class, 'parent_item_id');
+    }
 
     public function offer(): BelongsTo
     {

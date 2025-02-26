@@ -19,7 +19,8 @@ class ServiceResource extends JsonResource
             'price' => $this->price,
             'full_price' => $this->full_price,
             'margin' => $this->margin,
-            'calculator' => $this->calculator_id ?: null
+            'calculator' => $this->calculator_id ?: null,
+            'sub_services' => $this->subServices->isNotEmpty() ? ServiceResource::collection($this->subServices): []
         ];
     }
 
