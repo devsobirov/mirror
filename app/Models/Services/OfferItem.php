@@ -41,4 +41,16 @@ class OfferItem extends Model
 
         return $memo;
     }
+    
+    public function getFullMemoAttribute()
+    {
+        $memo = $this->memo;
+        if (!$this->parent_item_id && $this->subItems->count()) {
+            foreach($this->subItems as $subItem) {
+                $memo.= ",<br>" . $subItem->service?->name . ": ".  $subItem->memo;
+            }
+        }
+        
+        return $memo;
+    }
 }

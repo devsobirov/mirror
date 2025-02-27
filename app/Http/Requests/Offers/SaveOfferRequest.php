@@ -31,9 +31,21 @@ class SaveOfferRequest extends FormRequest
             'offer_items.*.price' => 'required|numeric|min:0',
             'offer_items.*.original_price' => 'required|numeric|min:0',
             'offer_items.*.cost' => 'required|numeric|min:0',
+            'offer_items.*.item_cost' => 'required|numeric|min:0',
             'offer_items.*.x' => 'nullable',
             'offer_items.*.y' => 'nullable',
             'offer_items.*.dimension_amount' => 'numeric|nullable',
+            'offer_items.*.parent_item_id' => 'nullable|integer',
+            'offer_items.*.sub_items' => 'nullable|array',
+            'offer_items.*.sub_items.*.service_id' => 'required|exists:services,id',
+            'offer_items.*.sub_items.*.quantity' => 'required|numeric|min:1',
+            'offer_items.*.sub_items.*.price' => 'required|numeric|min:0',
+            'offer_items.*.sub_items.*.original_price' => 'required|numeric|min:0',
+            'offer_items.*.sub_items.*.cost' => 'required|numeric|min:0',
+            'offer_items.*.sub_items.*.item_cost' => 'required|numeric|min:0',
+            'offer_items.*.sub_items.*.x' => 'nullable',
+            'offer_items.*.sub_items.*.y' => 'nullable',
+            'offer_items.*.sub_items.*.dimension_amount' => 'numeric|nullable',
             'created_at' => 'nullable'
         ];
     }

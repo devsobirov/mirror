@@ -165,16 +165,39 @@ class OffersController extends Controller
     public function getPrint(Offer $offer)
     {
         $settings = PrintSetting::first() ?? new PrintSetting();
+        $originalItems = $offer->offerItems;
        // Загружаем необходимые отношения
-        $offer->load(['offerItems.service', 'manager']);
-        $items = $offer->offerItems;
-    
+        $offer->load(['offerItems.service', 'offerItems.subItems', 'manager']);
+        $items = $originalItems->whereNull('parent_item_id');
+
         // Преобразуем $offer в массив с помощью OfferResource
         $offer = (new OfferResource($offer))->toArray(request());
         $offer['offer_items'] = [];
         foreach($items as $item) {
             $offer['offer_items'][] = (new OfferItemResource($item))->toArray(request());
         }
-        return view('prints.offer', compact('offer', 'settings'));
+
+        $groupedItems = $originalItems->groupBy('service_id');
+        // Создаем массив $totals
+        $totals = [];
+
+        foreach ($groupedItems as $serviceId => $group) {
+            if ($group->sum('quantity') == 1 && count($group) < 2) {
+                continue;
+            }
+            // Получаем имя услуги и единицу измерения из первой позиции группы
+            $serviceName = $group->first()->service->name;
+            $unit = $group->first()->service->unit;
+
+            // Вычисляем сумму dimension_amount для группы
+            $totalDimensionAmount = 0; 
+            foreach($group as $g) {
+                $totalDimensionAmount += ($g->dimension_amount * $g->quantity);
+            }
+
+            // Добавляем результат в массив $totals
+            $totals[] = "$serviceName " . number_format($totalDimensionAmount, 2, '.', ' ') . " $unit";
+        }
+        return view('prints.offer', compact('offer', 'settings', 'totals'));
     }
 }

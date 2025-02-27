@@ -720,14 +720,14 @@
             },
             getItemSum(item) {
                 const price = this.getItemTotal(item);
-                if (item.subItems.length) {
+                if (item.subItems && item.subItems.length) {
                     return price + item.subItems.reduce((sum, subItem) => sum + this.getItemTotal(subItem), 0);
                 }
                 return price;
             },
             getTotalSum() {
                 if (!this.offerItems.length) return 0;
-                return this.offerItems.reduce((sum, item) => sum + this.getItemTotal(item), 0);
+                return this.offerItems.reduce((sum, item) => sum + this.getItemSum(item), 0);
             },
             addToOrder(service, parentInnerId = null) {
                 console.log('Adding service:', service);
@@ -807,10 +807,22 @@
                     quantity: item.quantity,
                     price: item.custom_price || item.full_price,
                     original_price: item.full_price,
-                    cost: this.getItemTotal(item),
+                    item_cost: this.getItemTotal(item),
+                    cost: this.getItemSum(item),
                     x: item.x,
                     y: item.y,
                     dimension_amount: item.dimension_amount,
+                    sub_items: item.subItems.map(subItem => ({
+                        service_id: subItem.id,
+                        quantity: subItem.quantity,
+                        price: subItem.custom_price || subItem.full_price,
+                        original_price: subItem.full_price,
+                        item_cost: this.getItemTotal(subItem),
+                        cost: this.getItemSum(subItem),
+                        x: subItem.x,
+                        y: subItem.y,
+                        dimension_amount: subItem.dimension_amount
+                    }))
                 }));
             },
 
@@ -872,7 +884,6 @@
                     this.isSubmitting = false;
                 }
             },
-
             serviceHasCalculator(item) {
                 // Проверяем, есть ли у услуги поле calculator
                 return !item.parent_inner_id && item.calculator !== null && item.calculator !== undefined;

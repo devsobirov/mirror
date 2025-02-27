@@ -39,8 +39,39 @@ class OfferService
         $offer = Offer::create($offerData);
 
         // Создаем позиции заказа
-        $offer->offerItems()->createMany($data['offer_items']);
+        foreach ($data['offer_items'] as $item) {
+            $offerItem = $offer->offerItems()->create([
+                'service_id' => $item['service_id'],
+                'quantity' => $item['quantity'],
+                'price' => $item['price'],
+                'original_price' => $item['original_price'],
+                'cost' => $item['cost'],
+                'item_cost' => $item['item_cost'],
+                'x' => $item['x'] ?? null,
+                'y' => $item['y'] ?? null,
+                'dimension_amount' => $item['dimension_amount'] ?? null
+            ]);
 
-        return $offer->load('offerItems');
+            // Создаем подпозиции, если они есть
+            if (!empty($item['sub_items'])) {
+                foreach ($item['sub_items'] as $subItem) {
+                    $offerItem->subItems()->create([
+                        'service_id' => $subItem['service_id'],
+                        'quantity' => $subItem['quantity'],
+                        'price' => $subItem['price'],
+                        'original_price' => $subItem['original_price'],
+                        'cost' => $subItem['cost'],
+                        'item_cost' => $subItem['item_cost'],
+                        'x' => $subItem['x'] ?? null,
+                        'y' => $subItem['y'] ?? null,
+                        'dimension_amount' => $subItem['dimension_amount'] ?? null,
+                        'parent_item_id' => $offerItem->id,
+                        'offer_id' => $offer->id,
+                    ]);
+                }
+            }
+        }
+
+        return $offer->load(['offerItems', 'offerItems.subItems']);
     }
-} 
+}

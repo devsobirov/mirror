@@ -14,6 +14,7 @@ class OfferItemResource extends JsonResource
 
         return [
             'id' => $this->id,
+            'parent_item_id' => $this->parent_item_id,
             'service_id' => $this->service_id,
             'service_name' => $this->service->name,
             'service_image' => $this->service->image_url,
@@ -21,6 +22,7 @@ class OfferItemResource extends JsonResource
             //number_format($this->quantity, 2, '.', ' '),
             'price' => number_format($this->price, 0, '.', ' '),
             'original_price' => $hasDiscount ? number_format($this->original_price, 0, '.', ' ') : null,
+            'item_total' => number_format($this->item_cost, 0, '.', ' '),
             'total' => number_format($this->cost, 0, '.', ' '),
             'unit' => $this->service->unit,
             'has_discount' => $hasDiscount,
@@ -30,6 +32,7 @@ class OfferItemResource extends JsonResource
             'total_amount' => ($dm != 1 ? round($dm * $this->quantity, 2) : $this->quantity) . " " . $this->service->unit,
             'calculator' => $this->service?->calculator_id,
             'memo' => $this->memo,
+            'full_memo' => $this->full_memo,
             'sub_items' => $this->subItems->isNotEmpty() ? self::collection($this->subItems): []
         ];
     }

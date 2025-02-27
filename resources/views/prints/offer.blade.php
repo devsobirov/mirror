@@ -106,13 +106,23 @@
                     <td class="text-center">{{ $index + 1 }}</td>
                     <td>
                         <div class="text-bold">{{ $item['service_name'] }}</div>
-                        @if($item['memo'])
-                        <div style="font-size: 14px; margin-top: 1mm;">{{ $item['memo'] }}</div>
-                        @endif
                     </td>
                     <td class="text-center">x {{ $item['quantity'] }}</td>
                     <td class="text-right">{{ $item['total'] }} UZS</td>
                 </tr>
+                @if($item['full_memo'])
+                    <tr>
+                        <td></td>
+                        <td colspan="3">
+                        @foreach(explode("<br>", $item['full_memo']) as $memo)
+                            <div style="font-size: 14px; margin-top: 1mm;">{{$memo}}</div>
+                        @endforeach
+                        </td>
+                    </tr>
+                @endif
+                @endforeach
+                @foreach($totals as $text)
+                <tr><td colspan="4" @if($loop->last) style="border-bottom:none" @endif>{{$text}}</td></tr>
                 @endforeach
             </tbody>
         </table>
