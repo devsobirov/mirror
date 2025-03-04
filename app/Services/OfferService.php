@@ -21,11 +21,8 @@ class OfferService
             'status' => $data['status'] ?? OfferStatusEnum::Draft->value,
             'discount' => $data['discount'] ?? 0,
             'manager_id' => $data['manager_id'],
+            'created_at' => $data['created_at'] ?? now()
         ];
-
-        if ($date = $data['created_at'] ?? null) {
-            $offerData['created_at'] = $date;
-        }
         
         // Рассчитываем общую стоимость и скидку
         $totalCost = collect($data['offer_items'])->sum(function ($item) {

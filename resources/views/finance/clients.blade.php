@@ -51,9 +51,9 @@
                                        data-bs-target="#client-{{$item->id}}" data-bs-toggle="modal">
                                         <x-svg.plus></x-svg.plus>
                                     </a> -->
-                                    <a href="#" class="btn btn-icon btn-pink" title="Qarz berish"
+                                    <a href="#" class="btn btn-pink" title="Qarz berish"
                                        data-bs-target="#debt-{{$item->id}}" data-bs-toggle="modal">
-                                       <x-svg.bills></x-svg.bills>
+                                       Qarz berish
                                     </a>
                                     <a href="#" class="btn btn-icon btn-success" title="Tahrirlash"
                                        data-bs-target="#client-{{$item->id}}" data-bs-toggle="modal">

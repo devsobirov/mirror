@@ -29,7 +29,7 @@ class OfferItem extends Model
     public function getMemoAttribute()
     {
         $unit = $this->service?->unit ?? '';
-        $dm = $this->dimension_amount ?: 1;
+        $dm = $this->dimension_amount ? round($this->dimension_amount, 2) : 1;
 
         $memo = "$dm $unit";
         if ($this->x || $this->y) {

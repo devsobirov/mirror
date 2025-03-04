@@ -94,10 +94,24 @@ class OffersController extends Controller
 
     public function updateStatus(Request $request, Offer $offer)
     {
-        $validated = $request->validate([
+        $rules = [
             'status' => ['required', 'integer', Rule::in(array_keys(OfferStatusEnum::list()))]
-        ]);
+        ];
 
+        if (auth()->user()->isAdmin()) {
+            $rules = array_merge($rules, [
+                'client_name' => ['nullable', 'string', 'max:255'],
+                'phone' => ['nullable', 'string', 'max:255'],
+                'phone2' => ['nullable', 'string', 'max:255'],
+                'created_at' => ['nullable', 'date']
+            ]);
+        }
+
+        $validated = $request->validate($rules);
+        if (auth()->user()->isAdmin()) {
+            $validated['phone'] = $this->clearPhone($validated['phone']);
+            $validated['phone2'] = $this->clearPhone($validated['phone2']);
+        }
         $offer->update($validated);
 
         return response()->json([
@@ -199,5 +213,14 @@ class OffersController extends Controller
             $totals[] = "$serviceName " . number_format($totalDimensionAmount, 2, '.', ' ') . " $unit";
         }
         return view('prints.offer', compact('offer', 'settings', 'totals'));
+    }
+
+    private function clearPhone($phone): ?string
+    {
+        if ($phone) {
+            $phone = preg_replace('/\D/', '', $phone);
+            return $phone ?: null;
+        }
+        return null;
     }
 }

@@ -69,7 +69,7 @@
                                                     </div>
                                                     <button class="btn btn-primary btn-sm d-flex align-items-center" 
                                                             @click.prevent="addToOrder(service)">
-                                                        <span class="me-2" x-text="service.full_price + ' UZS'"></span>
+                                                        <span class="me-2" x-text="getServicePriceLabel(service)"></span>
                                                         <span class="d-flex">
                                                             <x-svg.plus class="icon"></x-svg.plus>
                                                         </span>
@@ -116,7 +116,7 @@
                                                                 </div>
                                                                 <button class="btn btn-primary btn-sm d-flex align-items-center" 
                                                                         @click.prevent="addToOrder(service)">
-                                                                    <span class="me-2" x-text="service.full_price + ' UZS'"></span>
+                                                                    <span class="me-2" x-text="getServicePriceLabel(service)"></span>
                                                                     <span class="d-flex">
                                                                         <x-svg.plus class="icon"></x-svg.plus>
                                                                     </span>
@@ -202,7 +202,7 @@
                                                                                 x-model="item.dimension_amount" 
                                                                                 @blur="item.isEditingDimension = false" 
                                                                                 min="0" 
-                                                                                step="0.01">
+                                                                                step="0.001">
                                                                             <button type="button" @click.prevent="openCalculator(item)" class="btn btn-icon btn-sm btn-ghost-secondary mx-1">
                                                                                 <x-svg.calc class="icon"></x-svg.calc>
                                                                             </button>
@@ -227,13 +227,13 @@
                                                                             <template x-if="item.custom_price">
                                                                                 <div class="d-flex flex-column">
                                                                                     <small class="text-decoration-line-through text-muted" 
-                                                                                        x-text="item.full_price + ' UZS'">
+                                                                                        x-text="getServicePriceLabel(item)">
                                                                                     </small>
                                                                                     <span x-text="item.custom_price + ' UZS'"></span>
                                                                                 </div>
                                                                             </template>
                                                                             <template x-if="!item.custom_price">
-                                                                                <span x-text="item.full_price + ' UZS'"></span>
+                                                                                <span x-text="getServicePriceLabel(item)"></span>
                                                                             </template>
                                                                         </div>
                                                                     </template>
@@ -561,14 +561,14 @@
         if (width && height && quantity) {
             if (calcItem.calculator === calc_m2) {
                 let dm = (width * height * 0.0001);
-                calcItem.dimension_amount = dm.toFixed(2);
-                return (dm * quantity).toFixed(2);
+                calcItem.dimension_amount = dm.toFixed(4);
+                return (dm * quantity).toFixed(4);
             } else if (calcItem.calculator === calc_perimeter) {
                 let dm = (parseFloat(width) + parseFloat(height)) * 2 * 0.01;
                 console.log(width, height, dm);
                 
-                calcItem.dimension_amount = dm.toFixed(2);
-                return (dm * quantity).toFixed(2);
+                calcItem.dimension_amount = dm.toFixed(4);
+                return (dm * quantity).toFixed(4);
             }
             return null;
         }
@@ -642,8 +642,7 @@
                 
                 this.services.forEach(category => {
                     category.services.forEach(service => {
-                        if (!this.isServiceInOrder(service.id) && 
-                            service.name.toLowerCase().includes(query)) {
+                        if (service.name.toLowerCase().includes(query)) {
                             results.push(service);
                         }
                     });
@@ -716,7 +715,7 @@
             getItemTotal(item) {
                 if (!item) return 0;
                 const price = item.custom_price || item.full_price;
-                return parseFloat((price * (item.quantity || 1) * (item.dimension_amount || 1)).toFixed(2));
+                return parseFloat((price * (item.quantity || 1) * (item.dimension_amount || 1)).toFixed(4));
             },
             getItemSum(item) {
                 const price = this.getItemTotal(item);
@@ -738,6 +737,7 @@
                     unit: service.unit,
                     image: service.image,
                     full_price: service.full_price,
+                    price: service.price,
                     custom_price: null,
                     isEditingPrice: false,
                     quantity: 1,
@@ -860,7 +860,7 @@
                             },
                             status: this.status,
                             discount: this.discount,
-                            order_date: this.orderDate,
+                            created_at: this.orderDate,
                             offer_items: this.prepareOfferItems()
                         })
                     });
@@ -900,7 +900,7 @@
             getSumDimensionAmount(item) {
                 return item.custom_amount 
                     ? parseFloat(item.custom_amount) 
-                    : (parseFloat(item.dimension_amount) * parseInt(item.quantity)).toFixed(2);
+                    : (parseFloat(item.dimension_amount) * parseInt(item.quantity)).toFixed(4);
             },
             openCalculator(item) {
                 this.calcItem = { ...item }; // Клонируем объект item
@@ -934,14 +934,14 @@
                 if (width && height && quantity) {
                     if (this.calcItem.calculator === calc_m2) {
                         let dm = (width * height * 0.0001);
-                        this.calcItem.dimension_amount = dm.toFixed(2);
-                        return (dm * quantity).toFixed(2);
+                        this.calcItem.dimension_amount = dm.toFixed(4);
+                        return (dm * quantity).toFixed(4);
                     } else if (this.calcItem.calculator === calc_perimeter) {
                         let dm = (parseFloat(width) + parseFloat(height)) * 2 * 0.01;
                         console.log(width, height, dm);
                         
-                        this.calcItem.dimension_amount = dm.toFixed(2);
-                        return (dm * quantity).toFixed(2);
+                        this.calcItem.dimension_amount = dm.toFixed(4);
+                        return (dm * quantity).toFixed(4);
                     }
                     return null;
                 }
@@ -973,6 +973,13 @@
                     group.push({is_summary: true, 'cost' : this.getItemSum(item), inner_id: Math.random(), parent_inner_id: item.inner_id});
                 };
                 return group;
+            },
+            getServicePriceLabel(service) {
+                let price = service.full_price;
+                if (service.price !== service.full_price) {
+                    price = `${service.price} / ${price} UZS`;
+                }
+                return price;
             }
         }));
     });     

@@ -128,13 +128,13 @@
                                                data-bs-target="#modal-offer-details">
                                                 <x-svg.eye></x-svg.eye>
                                             </a>
-                                            <a href="{{route('offers.copy', $offer->id)}}" class="btn btn-icon" title="Nusxalash">
+                                            <!-- <a href="{{route('offers.copy', $offer->id)}}" class="btn btn-icon" title="Nusxalash">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                                     <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                                     <rect x="8" y="8" width="12" height="12" rx="2" />
                                                     <path d="M16 8v-2a2 2 0 0 0 -2 -2h-8a2 2 0 0 0 -2 2v8a2 2 0 0 0 2 2h2" />
                                                 </svg>
-                                            </a>
+                                            </a> -->
                                             <a href="#" 
                                                class="btn btn-icon" 
                                                title="Holatni tahrirlash"
@@ -193,6 +193,30 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    @if(auth()->user()->isAdmin())
+                        <div class="mb-3">
+                            <label class="form-label">Mijoz ismi</label>
+                            <input type="text" class="form-control" id="client-name-input" placeholder="Mijoz ismini kiriting">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Telefon raqami</label>
+                            <div class="input-group">
+                                <span class="input-group-text">+998</span>
+                                <input type="text" class="form-control" id="phone-input" placeholder="(99) 500-00-00">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Qo'shimcha telefon raqami</label>
+                            <div class="input-group">
+                                <span class="input-group-text">+998</span>
+                                <input type="text" class="form-control" id="phone2-input" placeholder="(99) 500-00-00">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Buyurtma sanasi</label>
+                            <input type="date" class="form-control" id="order-date-input">
+                        </div>
+                    @endif
                     <div class="mb-3">
                         <label class="form-label">Holat</label>
                         <select class="form-select" id="status-select">
@@ -278,9 +302,29 @@
     let currentOfferId = null;
     let currentOffer = null;
 
-    function editStatus(offerId, currentStatus) {
+    async function editStatus(offerId, currentStatus) {
         currentOfferId = offerId;
         document.getElementById('status-select').value = currentStatus;
+
+        if (document.getElementById('client-name-input')) {
+            try {
+                const response = await fetch(`/offers/${offerId}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                const offer = data.data;
+                document.getElementById('client-name-input').value = offer.client_name || '';
+                document.getElementById('phone-input').value = offer.phone || '';
+                document.getElementById('phone2-input').value = offer.phone2 || '';
+                document.getElementById('order-date-input').value = offer.date || '';
+                
+            } catch (error) {
+                console.error('Error loading offer details:', error);
+            }
+        }
     }
 
     document.getElementById('save-status').addEventListener('click', async function() {
@@ -294,7 +338,13 @@
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify({
-                    status: document.getElementById('status-select').value
+                    status: document.getElementById('status-select').value,
+                    ...(document.getElementById('client-name-input') && {
+                        client_name: document.getElementById('client-name-input').value,
+                        phone: document.getElementById('phone-input').value,
+                        phone2: document.getElementById('phone2-input').value,
+                        created_at: document.getElementById('order-date-input').value
+                    })
                 })
             });
 
@@ -430,4 +480,4 @@
         }
     }
 </script>
-@endsection 
+@endsection
