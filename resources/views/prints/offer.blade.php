@@ -79,12 +79,12 @@
         <div style="margin-bottom: 3mm;">
             <table style="width: 100%;">
                 <tr>
-                    <td style="text-align: left; border-bottom:none; padding-bottom:0">Buyurtma ID: #{{ $offer['id'] }}</td>
-                    <td style="text-align: right; border-bottom:none; padding-bottom:0">Sana: {{ $offer['created_at'] }}</td>
+                    <td style="text-align: left; border-bottom:none; padding-bottom:0; font-size:16px;">Buyurtma ID: #{{ $offer['id'] }}</td>
+                    <td style="text-align: right; border-bottom:none; padding-bottom:0;font-size:16px;">Sana: {{ $offer['created_at'] }}</td>
                 </tr>
                 <tr>
-                    <td style="text-align: left; border-bottom:none; padding-bottom:0">Mijoz: {{ $offer['client_name'] }}</td>
-                    <td style="text-align: right; border-bottom:none; padding-bottom:0">
+                    <td style="text-align: left; border-bottom:none; padding-bottom:0;font-size:16px;">Mijoz: {{ $offer['client_name'] }}</td>
+                    <td style="text-align: right; border-bottom:none; padding-bottom:0;font-size:16px;">
                         Tel: {{ $offer['phone_number'] ?? '-' }}@if($ph2 = $offer['phone_number2'] ?? null),<br> {{$ph2}}@endif
                     </td>
                 </tr>

@@ -202,7 +202,7 @@
                                                                                 x-model="item.dimension_amount" 
                                                                                 @blur="item.isEditingDimension = false" 
                                                                                 min="0" 
-                                                                                step="0.001">
+                                                                                step="0.0001">
                                                                             <button type="button" @click.prevent="openCalculator(item)" class="btn btn-icon btn-sm btn-ghost-secondary mx-1">
                                                                                 <x-svg.calc class="icon"></x-svg.calc>
                                                                             </button>
