@@ -598,21 +598,22 @@
             addSubItem(subService) {
                 const parentItem = this.offerItems.find(item => item.inner_id === this.calcItem.inner_id);
                     if (!parentItem) return;
+                    const sub = { ...subService }; // Используем оператор расширения для клонирования
 
-                    subService.inner_id = Math.random(),
-                    subService.full_price = subService.full_price,
-                    subService.custom_price = null,
-                    subService.isEditingPrice = false,
-                    subService.quantity =  this.calcItem.quantity || subService.quantity || 1,
-                    subService.x = this.calcItem.x || subService.x,
-                    subService.y = this.calcItem.y || subService.y,
-                    subService.calculator = subService.calculator
-                    subService.dimension_amount = calcByItem(subService);
-                    subService.parent_inner_id = this.calcItem.inner_id;
+                    sub.inner_id = Math.random(),
+                    sub.full_price = subService.full_price,
+                    sub.custom_price = null,
+                    sub.isEditingPrice = false,
+                    sub.quantity =  this.calcItem.quantity || subService.quantity || 1,
+                    sub.x = this.calcItem.x || subService.x,
+                    sub.y = this.calcItem.y || subService.y,
+                    sub.calculator = subService.calculator
+                    sub.dimension_amount = calcByItem(subService);
+                    sub.parent_inner_id = this.calcItem.inner_id;
                     if (!this.calcItem.subItems) {
                         this.calcItem.subItems = [];
                     }
-                    this.calcItem.subItems.push(subService);
+                    this.calcItem.subItems.push(sub);
             },
             
             get isFormValid() {
@@ -726,7 +727,8 @@
             },
             getTotalSum() {
                 if (!this.offerItems.length) return 0;
-                return this.offerItems.reduce((sum, item) => sum + this.getItemSum(item), 0);
+                let sum = this.offerItems.reduce((sum, item) => sum + this.getItemSum(item), 0);
+                return Math.round(sum);
             },
             addToOrder(service, parentInnerId = null) {
                 console.log('Adding service:', service);
@@ -889,7 +891,8 @@
                 return !item.parent_inner_id && item.calculator !== null && item.calculator !== undefined;
             },
             getItemMemo(item) {
-                let memo = item.dimension_amount + ' ' + item.unit;
+                let dm_a = !isNaN(item.dimension_amount) ? parseFloat(item.dimension_amount).toFixed(2) : '';
+                let memo = dm_a + ' ' + item.unit;
                 if (item.x || item.y) {
                     let x = item.x ? item.x : '?';
                     let y = item.y ? item.y : '?';
