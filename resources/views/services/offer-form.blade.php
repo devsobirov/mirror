@@ -206,6 +206,27 @@
                                                                             <button type="button" @click.prevent="openCalculator(item)" class="btn btn-icon btn-sm btn-ghost-secondary mx-1">
                                                                                 <x-svg.calc class="icon"></x-svg.calc>
                                                                             </button>
+                                                                            <!-- Добавляем кнопку для ручного ввода -->
+                                                                            <button type="button" @click.prevent="openManualInput(item)" class="btn btn-icon btn-sm btn-ghost-secondary">
+                                                                                <x-svg.pen class="icon"></x-svg.pen>
+                                                                            </button>
+                                                                        </div>
+                                                                    </template>
+                                                                    <template x-if="!serviceHasCalculator(item)">
+                                                                        <div class="d-flex align-items-center">
+                                                                            <p x-show="!item.isEditingDimension" x-text="`${getSumDimensionAmount(item)} ${item.unit}`"></p>
+                                                                            <input type="number" 
+                                                                                class="form-control form-control-sm" 
+                                                                                style="min-width: 80px" 
+                                                                                x-show="item.isEditingDimension" 
+                                                                                x-model="item.dimension_amount" 
+                                                                                @blur="item.isEditingDimension = false" 
+                                                                                min="0" 
+                                                                                step="0.0001">
+                                                                            <!-- Только кнопка для ручного ввода, но только если это не subItem -->
+                                                                            <button x-show="!item.parent_inner_id" type="button" @click.prevent="openManualInput(item)" class="btn btn-icon btn-sm btn-ghost-secondary mx-1">
+                                                                                <x-svg.pen class="icon"></x-svg.pen>
+                                                                            </button>
                                                                         </div>
                                                                     </template>
                                                                 </div>
@@ -544,6 +565,112 @@
                 </div>
             </div>
         </div>
+        <!-- Добавляем модальное окно для ручного ввода -->
+        <div class="modal fade" id="manualInputModal" tabindex="-1" role="dialog" aria-labelledby="manualInputModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="manualInputModalLabel">Qiymatni qo'lda kiritish</h5>
+                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true" @click="manualModal.hide()">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="form-group col-md-8">
+                                <label for="manual-dimension">O'lcham</label>
+                                <div class="input-group">
+                                    <input type="number" id="manual-dimension" x-model="manualItem.dimension_amount" class="form-control" placeholder="Qiymatni kiriting" min="0" step="0.0001" required>
+                                    <span class="input-group-text" x-text="manualItem.unit"></span>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="manual-quantity">Soni</label>
+                                <input type="number" id="manual-quantity" x-model="manualItem.quantity" class="form-control" placeholder="Miqdor kiriting" min="1" value="1">
+                            </div>
+                        </div>
+
+                        <!-- Sub-services section -->
+                        <template x-if="manualItem.sub_services && manualItem.sub_services.length > 0">
+                            <div class="mt-4">
+                                <h6 class="mb-3">Qo'shimcha xizmatlar</h6>
+                                <div class="list-group">
+                                    <template x-for="subService in getSubServices(manualItem)" :key="subService.inner_id">
+                                        <div class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <div class="d-flex align-items-center">
+                                                    <span class="avatar me-3" 
+                                                          :style="'background-image: url(' + subService.image + ')'">
+                                                    </span>
+                                                    <div>
+                                                        <span x-text="subService.name"></span>
+                                                        <small class="text-muted d-block" x-text="'1 ' + subService.unit + ' uchun'"></small>
+                                                    </div>
+                                                </div>
+                                                <button class="btn btn-primary btn-sm d-flex align-items-center" 
+                                                        @click.prevent="addManualSubItem(subService)"
+                                                        :disabled="!isManualValid()">
+                                                    <span class="me-2" x-text="subService.full_price + ' UZS'"></span>
+                                                    <span class="d-flex">
+                                                        <x-svg.plus class="icon"></x-svg.plus>
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                        
+                        <template x-if="manualItem.subItems && manualItem.subItems.length > 0">
+                            <div class="mt-4">
+                                <h6 class="mb-3">Tanlangan qo'shimcha xizmatlar</h6>
+                                <template x-for="subItem in manualItem.subItems" :key="subItem.inner_id">
+                                    <div class="row mt-3">
+                                        <div class="row col-lg-12 justify-content-between align-items-center">
+                                            <div class="col-6 d-flex align-items-center">
+                                                <span class="avatar me-3" 
+                                                      :style="'background-image: url(' + subItem.image + ')'">
+                                                </span>
+                                                <div>
+                                                    <span x-text="subItem.name"></span>
+                                                    <small class="text-muted d-block" x-text="'1 ' + subItem.unit + ' uchun'"></small>
+                                                </div>
+                                            </div>
+                                            <button class="col-3 btn btn-danger btn-sm d-flex align-items-center" @click.prevent="removeSubService(subItem, manualItem)">
+                                                <span class="me-2" x-text="getItemTotal(subItem) + ' UZS'"></span>
+                                                <span class="d-flex">
+                                                    <x-svg.trash class="icon"></x-svg.plus>
+                                                </span>
+                                            </button>
+                                        </div>
+                                        <div class="form-group col-md-8">
+                                            <label :for="'manual-sub-dimension-' + subItem.id">O'lcham</label>
+                                            <div class="input-group">
+                                                <input type="number" :id="'manual-sub-dimension-' + subItem.id" 
+                                                       x-model="subItem.dimension_amount" class="form-control" 
+                                                       placeholder="Qiymatni kiriting" min="0" step="0.0001" required>
+                                                <span class="input-group-text" x-text="subItem.unit"></span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group col-md-4">
+                                            <label :for="'manual-sub-quantity-' + subItem.id">Soni</label>
+                                            <input type="number" :id="'manual-sub-quantity-' + subItem.id" 
+                                                   x-model="subItem.quantity" class="form-control" 
+                                                   placeholder="Miqdor kiriting" min="1" value="1">
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bekor qilish</button>
+                        <button type="button" class="btn btn-primary" :disabled="!isManualValid()" @click.prevent="applyManualValues()">Qo'shish</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
 @endsection
@@ -553,6 +680,7 @@
     const calc_m2 = "{{\App\Enums\Service\ServiceCalculatorTypeEnum::SquareMeter->value}}";
     const calc_perimeter = "{{\App\Enums\Service\ServiceCalculatorTypeEnum::Perimeter->value}}";
     const calcModal = new bootstrap.Modal(document.getElementById('calculatorModal'));
+    const manualModal = new bootstrap.Modal(document.getElementById('manualInputModal'));
     const calcByItem = function(calcItem) {
         let width = calcItem.x;
         let height = calcItem.y;
@@ -594,6 +722,7 @@
             },
             status: {{ \App\Enums\Offer\OfferStatusEnum::Draft->value }},
             orderDate: '',
+            manualItem: {},
             
             addSubItem(subService) {
                 const parentItem = this.offerItems.find(item => item.inner_id === this.calcItem.inner_id);
@@ -983,7 +1112,46 @@
                     price = `${service.price} / ${price} UZS`;
                 }
                 return price;
-            }
+            },
+            openManualInput(item) {
+                this.manualItem = { ...item }; // Клонируем объект item
+                manualModal.show(); // Открываем модальное окно
+            },
+            isManualValid() {
+                return this.manualItem.dimension_amount > 0;
+            },
+            
+            addManualSubItem(subService) {
+                const parentItem = this.offerItems.find(item => item.inner_id === this.manualItem.inner_id);
+                if (!parentItem) return;
+                
+                const sub = { ...subService }; // Используем оператор расширения для клонирования
+                
+                sub.inner_id = Math.random();
+                sub.full_price = subService.full_price;
+                sub.custom_price = null;
+                sub.isEditingPrice = false;
+                sub.quantity = this.manualItem.quantity || subService.quantity || 1;
+                sub.dimension_amount = 1; // Начальное значение
+                sub.parent_inner_id = this.manualItem.inner_id;
+                
+                if (!this.manualItem.subItems) {
+                    this.manualItem.subItems = [];
+                }
+                this.manualItem.subItems.push(sub);
+            },
+            applyManualValues() {
+                if (this.isManualValid()) {
+                    // Найдите offerItem по this.manualItem.inner_id
+                    const offerItem = this.offerItems.find(item => item.inner_id === this.manualItem.inner_id);
+                    if (offerItem) {
+                        offerItem.dimension_amount = this.manualItem.dimension_amount;
+                        offerItem.quantity = this.manualItem.quantity;
+                        offerItem.subItems = this.manualItem.subItems;
+                        manualModal.hide();
+                    }
+                }
+            },
         }));
     });     
 </script>
