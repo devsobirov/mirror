@@ -168,6 +168,7 @@ class OffersController extends Controller
                     'name' => $item->service->name,
                     'unit' => $item->service->unit,
                     'image' => $item->service->image_url,
+                    'price' => $item->service->price,
                     'full_price' => $item->service->full_price,
                     'custom_price' => $item->price != $item->original_price ? $item->price : null,
                     'isEditingPrice' => false,

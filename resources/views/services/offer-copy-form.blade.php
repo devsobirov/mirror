@@ -758,8 +758,14 @@
                 
                 // Инициализация данных из initialData
                 if (initialData) {
-                    if (initialData.offerItems && initialData.offerItems.length > 0) {
-                        this.offerItems = initialData.offerItems;
+                    if (initialData.offerItems) {
+                        // Проверяем, является ли offerItems объектом, а не массивом
+                        if (initialData.offerItems && typeof initialData.offerItems === 'object' && !Array.isArray(initialData.offerItems)) {
+                            // Преобразуем объект в массив
+                            this.offerItems = Object.values(initialData.offerItems);
+                        } else if (Array.isArray(initialData.offerItems) && initialData.offerItems.length > 0) {
+                            this.offerItems = initialData.offerItems;
+                        }
                     }
                     
                     if (initialData.discount) {
@@ -948,6 +954,7 @@
                 console.log('Xizmatlar:', this.services);
                 console.log('Taklif elementlari:', this.offerItems);
                 console.log('Mijoz:', this.client);
+                console.log('Copied:', initialData);
             },
 
             prepareOfferItems() {
@@ -1125,11 +1132,14 @@
                 return group;
             },
             getServicePriceLabel(service) {
-                let price = service.full_price;
-                if (service.price !== service.full_price) {
-                    price = `${service.price} / ${price} UZS`;
+                if (!service || !service.full_price) return '0 UZS';
+                
+                // Проверяем наличие поля price и что оно отличается от full_price
+                if (service.price && service.price !== service.full_price) {
+                    return `${service.price} / ${service.full_price} UZS`;
+                } else {
+                    return `${service.full_price} UZS`;
                 }
-                return price;
             },
             openManualInput(item) {
                 this.manualItem = { ...item }; // Клонируем объект item
