@@ -147,15 +147,23 @@ class OffersController extends Controller
 
     public function copy(Offer $offer)
     {
-        $offer->load(['offerItems.service']);
+        // Загружаем связанные данные, включая подэлементы
+        $offer->load(['offerItems.service', 'offerItems.subItems']);
         
         // Подготавливаем данные для формы
-        $categories = CategoryWithServicesResource::collection(Category::with(['services'])->get());
+        $categories = Category::query()
+            ->with(['services' => fn($q) => $q->where('active', true)->with('subServices')])
+            ->whereHas('services')
+            ->orderBy('id')
+            ->get();
+        
+        $categories = CategoryWithServicesResource::collection($categories);
         
         // Подготовим начальные данные для Alpine.js
         $initialData = [
-            'offerItems' => $offer->offerItems->map(function($item) {
-                return [
+            'offerItems' => $offer->offerItems->whereNull('parent_item_id')->map(function($item) {
+                $itemData = [
+                    'inner_id' => mt_rand(100000, 999999), // Генерируем уникальный ID для Alpine.js
                     'id' => $item->service->id,
                     'name' => $item->service->name,
                     'unit' => $item->service->unit,
@@ -167,10 +175,43 @@ class OffersController extends Controller
                     'x' => $item->x,
                     'y' => $item->y,
                     'dimension_amount' => $item->dimension_amount,
-                    'calculator' => $item->service->calculator_id
+                    'calculator' => $item->service->calculator_id,
+                    'sub_services' => $item->service->subServices ?? []
                 ];
-            }),
-            'discount' => $offer->discount
+                
+                // Добавляем подэлементы, если они есть
+                if ($item->subItems && $item->subItems->count() > 0) {
+                    $itemData['subItems'] = $item->subItems->map(function($subItem) use ($itemData) {
+                        return [
+                            'inner_id' => mt_rand(100000, 999999), // Генерируем уникальный ID для Alpine.js
+                            'id' => $subItem->service->id,
+                            'name' => $subItem->service->name,
+                            'unit' => $subItem->service->unit,
+                            'image' => $subItem->service->image_url,
+                            'full_price' => $subItem->service->full_price,
+                            'price' => $subItem->price,
+                            'custom_price' => $subItem->price != $subItem->original_price ? $subItem->price : null,
+                            'isEditingPrice' => false,
+                            'quantity' => $subItem->quantity,
+                            'x' => $subItem->x,
+                            'y' => $subItem->y,
+                            'dimension_amount' => $subItem->dimension_amount,
+                            'calculator' => $subItem->service->calculator_id,
+                            'parent_inner_id' => $itemData['inner_id']
+                        ];
+                    })->toArray();
+                } else {
+                    $itemData['subItems'] = [];
+                }
+                
+                return $itemData;
+            })->toArray(),
+            'discount' => $offer->discount,
+            'client_name' => '', // Пустые поля для нового заказа
+            'phone' => '',
+            'phone2' => '',
+            'comment' => '',
+            'orderDate' => Carbon::now()->format('Y-m-d')
         ];
 
         return view('services.offer-copy-form', compact('categories', 'initialData'));

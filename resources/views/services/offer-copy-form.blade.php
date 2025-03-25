@@ -15,26 +15,12 @@
 @endsection
 @section('content')
     <div class="container-xl" x-data="OfferFormData">
-        <!-- Добавляем CSRF токен -->
+        <!-- CSRF токен qo'shish -->
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        
-        <!-- Добавляем информацию об исходном заказе -->
-        <!-- @if($offer = request()->route()->parameter('offer'))
-        <div class="alert alert-info d-flex align-items-center gap-2">
-            <span>Копирование заказа</span>
-            <a href="#"
-                class="alert-link"
-               onclick="showOfferDetails({{ $offer->id }})"
-               data-bs-toggle="modal" 
-               data-bs-target="#modal-offer-details">
-               #{{ $offer->id }}
-            </a>
-        </div>
-        @endif -->
         
         <form @submit.prevent="saveOffer">
             <div class="row mt-4">
-                <!-- Левая панель со списком услуг -->
+                <!-- Xizmatlar ro'yxati uchun chap panel -->
                 <div class="col-md-4">
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
@@ -48,7 +34,7 @@
                             </div>
                         </div>
                         <div class="card-body p-0">
-                            <!-- Блок результатов поиска -->
+                            <!-- Qidiruv natijalari bloki -->
                             <template x-if="isSearching">
                                 <div class="p-3">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -83,7 +69,7 @@
                                                     </div>
                                                     <button class="btn btn-primary btn-sm d-flex align-items-center" 
                                                             @click.prevent="addToOrder(service)">
-                                                        <span class="me-2" x-text="service.full_price + ' UZS'"></span>
+                                                        <span class="me-2" x-text="getServicePriceLabel(service)"></span>
                                                         <span class="d-flex">
                                                             <x-svg.plus class="icon"></x-svg.plus>
                                                         </span>
@@ -95,7 +81,7 @@
                                 </div>
                             </template>
 
-                            <!-- Основной каталог -->
+                            <!-- Asosiy katalog -->
                             <template x-if="!isSearching">
                                 <div class="accordion" id="servicesAccordion">
                                     <template x-for="(category, index) in getAvailableCategories()" :key="category.id">
@@ -130,7 +116,7 @@
                                                                 </div>
                                                                 <button class="btn btn-primary btn-sm d-flex align-items-center" 
                                                                         @click.prevent="addToOrder(service)">
-                                                                    <span class="me-2" x-text="service.full_price + ' UZS'"></span>
+                                                                    <span class="me-2" x-text="getServicePriceLabel(service)"></span>
                                                                     <span class="d-flex">
                                                                         <x-svg.plus class="icon"></x-svg.plus>
                                                                     </span>
@@ -148,7 +134,7 @@
                     </div>
                 </div>
 
-                <!-- Правая панель с выбранными услугами -->
+                <!-- Tanlangan xizmatlar bilan o'ng panel -->
                 <div class="col-md-8">
                     <form @submit.prevent="saveOffer">
                         <div class="card">
@@ -175,88 +161,136 @@
                                                 <tr>
                                                     <th style="width: 40px">#</th>
                                                     <th>Xizmat</th>
+                                                    <th style="min-width: 80px">O'lcham</th>
                                                     <th>Miqdori</th>
                                                     <th>Narx</th>
                                                     <th>Summa</th>
                                                     <th style="width: 40px"></th>
                                                 </tr>
                                             </thead>
+                                            <template x-for="(baseItem, index) in offerItems" :key="Math.random()">
                                             <tbody>
-                                                <template x-for="(item, index) in offerItems" :key="item.id">
+                                                <template x-for="(item, i) in getItemAsGroup(baseItem)" :key="item.inner_id">
                                                     <tr>
-                                                        <td x-text="index + 1"></td>
-                                                        <td>
-                                                            <div class="d-flex align-items-center gap-2">
-                                                                <a :data-fslightbox="'order' + item.id" 
-                                                                   :href="item.image"
-                                                                   x-init="refreshFsLightbox()">
-                                                                    <span class="avatar" 
-                                                                          :style="'background-image: url(' + item.image + ')'">
-                                                                    </span>
-                                                                </a>
-                                                                <div>
-                                                                    <span x-text="item.name"></span>
-                                                                    <small class="text-muted d-block" x-text="'1 ' + item.unit"></small>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            <input type="number" 
-                                                                   class="form-control form-control-sm" 
-                                                                   style="width: 80px" 
-                                                                   :value="item.quantity" 
-                                                                   @input="updateQuantity(item.id, $event.target.value)"
-                                                                   min="1"
-                                                                   step="0.001">
-                                                        </td>
-                                                        <td>
-                                                            <div class="d-flex align-items-center gap-2">
-                                                                <template x-if="!item.isEditingPrice">
+                                                    <td x-text="(item.inner_id == baseItem.inner_id) ? (index + 1) : ''"></td>
+                                                            <td>
+                                                                <template x-if="!item.is_summary">
+                                                                <div class="d-flex align-items-center gap-2">
+                                                                    <a :data-fslightbox="'order' + item.id" 
+                                                                    :href="item.image"
+                                                                    x-init="refreshFsLightbox()">
+                                                                        <span class="avatar" 
+                                                                            :style="'background-image: url(' + item.image + ')'">
+                                                                        </span>
+                                                                    </a>
                                                                     <div>
-                                                                        <template x-if="item.custom_price">
-                                                                            <div class="d-flex flex-column">
-                                                                                <small class="text-decoration-line-through text-muted" 
-                                                                                       x-text="item.full_price + ' UZS'">
-                                                                                </small>
-                                                                                <span x-text="item.custom_price + ' UZS'"></span>
-                                                                            </div>
-                                                                        </template>
-                                                                        <template x-if="!item.custom_price">
-                                                                            <span x-text="item.full_price + ' UZS'"></span>
-                                                                        </template>
+                                                                        <span x-text="item.name"></span>
+                                                                        <small class="text-muted d-block" x-text="getItemMemo(item)"></small>
                                                                     </div>
+                                                                </div>
                                                                 </template>
-                                                                <template x-if="item.isEditingPrice">
-                                                                    <input type="number" 
-                                                                           class="form-control form-control-sm" 
-                                                                           style="width: 120px"
-                                                                           :value="item.custom_price || item.full_price"
-                                                                           @keyup.enter="saveCustomPrice(item.id, $event.target.value)"
-                                                                           @keyup.esc="cancelEditPrice(item.id)"
-                                                                           @blur="saveCustomPrice(item.id, $event.target.value)">
-                                                                </template>
-                                                                <button class="btn btn-icon btn-sm" 
-                                                                        :class="item.isEditingPrice ? 'btn-success' : 'btn-ghost-secondary'"
-                                                                        @click="toggleEditPrice(item.id)">
+                                                            </td>
+                                                            <td>
+                                                                <div x-show="!item.is_summary">
+                                                                    <template x-if="serviceHasCalculator(item)">
+                                                                        <div class="d-flex align-items-center">
+                                                                            <p x-show="!item.isEditingDimension" x-text="`${getSumDimensionAmount(item)} ${item.unit}`"></p>
+                                                                            <input type="number" 
+                                                                                class="form-control form-control-sm" 
+                                                                                style="min-width: 80px" 
+                                                                                x-show="item.isEditingDimension" 
+                                                                                x-model="item.dimension_amount" 
+                                                                                @blur="item.isEditingDimension = false" 
+                                                                                min="0" 
+                                                                                step="0.0001">
+                                                                            <button type="button" @click.prevent="openCalculator(item)" class="btn btn-icon btn-sm btn-ghost-secondary mx-1">
+                                                                                <x-svg.calc class="icon"></x-svg.calc>
+                                                                            </button>
+                                                                            <!-- Добавляем кнопку для ручного ввода -->
+                                                                            <button type="button" @click.prevent="openManualInput(item)" class="btn btn-icon btn-sm btn-ghost-secondary">
+                                                                                <x-svg.pen class="icon"></x-svg.pen>
+                                                                            </button>
+                                                                        </div>
+                                                                    </template>
+                                                                    <template x-if="!serviceHasCalculator(item)">
+                                                                        <div class="d-flex align-items-center">
+                                                                            <p x-show="!item.isEditingDimension" x-text="`${getSumDimensionAmount(item)} ${item.unit}`"></p>
+                                                                            <input type="number" 
+                                                                                class="form-control form-control-sm" 
+                                                                                style="min-width: 80px" 
+                                                                                x-show="item.isEditingDimension" 
+                                                                                x-model="item.dimension_amount" 
+                                                                                @blur="item.isEditingDimension = false" 
+                                                                                min="0" 
+                                                                                step="0.0001">
+                                                                            <!-- Только кнопка для ручного ввода, но только если это не subItem -->
+                                                                            <button x-show="!item.parent_inner_id" type="button" @click.prevent="openManualInput(item)" class="btn btn-icon btn-sm btn-ghost-secondary mx-1">
+                                                                                <x-svg.pen class="icon"></x-svg.pen>
+                                                                            </button>
+                                                                        </div>
+                                                                    </template>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <input type="number" x-show="!item.is_summary"
+                                                                    class="form-control form-control-sm" 
+                                                                    style="width: 80px" 
+                                                                    :value="item.quantity" 
+                                                                    @input="updateQuantity(item, $event.target.value)"
+                                                                    min="1"
+                                                                    :step="(serviceHasCalculator(item) || item.parent_inner_id) ? 1 : 0.01">
+                                                            </td>
+                                                            <td>
+                                                                <template x-if="!item.is_summary">
+                                                                <div class="d-flex align-items-center gap-2">
                                                                     <template x-if="!item.isEditingPrice">
-                                                                        <x-svg.pen class="icon"></x-svg.pen>
+                                                                        <div>
+                                                                            <template x-if="item.custom_price">
+                                                                                <div class="d-flex flex-column">
+                                                                                    <small class="text-decoration-line-through text-muted" 
+                                                                                        x-text="getServicePriceLabel(item)">
+                                                                                    </small>
+                                                                                    <span x-text="item.custom_price + ' UZS'"></span>
+                                                                                </div>
+                                                                            </template>
+                                                                            <template x-if="!item.custom_price">
+                                                                                <span x-text="getServicePriceLabel(item)"></span>
+                                                                            </template>
+                                                                        </div>
                                                                     </template>
                                                                     <template x-if="item.isEditingPrice">
-                                                                        <x-svg.check class="icon"></x-svg.check>
-
+                                                                        <input type="number" 
+                                                                            class="form-control form-control-sm" 
+                                                                            style="width: 120px"
+                                                                            :value="item.custom_price || item.full_price"
+                                                                            @keyup.enter="saveCustomPrice(item, $event.target.value)"
+                                                                            @keyup.esc="cancelEditPrice(item)"
+                                                                            @blur="saveCustomPrice(item, $event.target.value)">
                                                                     </template>
+                                                                    <button class="btn btn-icon btn-sm" 
+                                                                            :class="item.isEditingPrice ? 'btn-success' : 'btn-ghost-secondary'"
+                                                                            @click.prevent="toggleEditPrice(item.inner_id, item.parent_inner_id ? item : null)">
+                                                                        <template x-if="!item.isEditingPrice">
+                                                                            <x-svg.pen class="icon"></x-svg.pen>
+                                                                        </template>
+                                                                        <template x-if="item.isEditingPrice">
+                                                                            <x-svg.check class="icon"></x-svg.check>
+                                                                        </template>
+                                                                    </button>
+                                                                </div>
+                                                                </template>
+                                                            </td>
+                                                            <td x-text="(item.is_summary ? item.cost : getItemTotal(item)) + ' UZS'"></td>
+                                                            <td>
+                                                                <button x-show="!item.is_summary" class="btn btn-sm btn-danger" 
+                                                                    @click="item.parent_inner_id ? removeSubItem(item, baseItem) : removeItem(item.inner_id)">
+                                                                    <x-svg.trash class="icon"></x-svg.trash>
                                                                 </button>
-                                                            </div>
-                                                        </td>
-                                                        <td x-text="getItemTotal(item) + ' UZS'"></td>
-                                                        <td>
-                                                            <button class="btn btn-sm btn-danger" @click="removeItem(item.id)">
-                                                                <x-svg.trash class="icon"></x-svg.trash>
-                                                            </button>
-                                                        </td>
+                                                            </td>
                                                     </tr>
                                                 </template>
                                             </tbody>
+                                            </template>
                                             <tfoot>
                                                 <tr>
                                                     <td colspan="4" class="text-end"><strong>Summa:</strong></td>
@@ -306,7 +340,7 @@
                                     </template>
                                 </div>
 
-                                <!-- Форма клиента -->
+                                <!-- Mijoz ma'lumotlari formasi -->
                                 <template x-if="offerItems.length > 0">
                                     <div class="mt-4">
                                         <h3 class="mb-3">Mijoz haqida ma'lumot</h3>
@@ -326,7 +360,9 @@
                                                     <label class="form-label required">Telefon raqami</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text">+998</span>
-                                                        <input type="text" 
+                                                        <input type="text"
+                                                               maxlength="14"
+                                                               minlength="14"
                                                                x-model="client.phone_number" 
                                                                class="form-control" 
                                                                placeholder="(00) 000-00-00"
@@ -337,7 +373,7 @@
                                                                        });
                                                                    });
                                                                }"
-                                                               required>
+                                                        >
                                                     </div>
                                                 </div>
                                             </div>
@@ -346,7 +382,9 @@
                                                     <label class="form-label">Qo'shimcha raqam</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text">+998</span>
-                                                        <input type="text" 
+                                                        <input type="text"
+                                                               maxlength="14"
+                                                               minlength="14"
                                                                x-model="client.phone_number2" 
                                                                class="form-control" 
                                                                placeholder="(00) 000-00-00"
@@ -380,15 +418,18 @@
                                                 </div>
                                             </div>
                                             <!-- Добавляем поле для выбора даты заказа -->
-                                            <div class="mb-3">
-                                                <label class="form-label required">Sana</label>
-                                                <input type="date" 
-                                                       x-model="orderDate" 
-                                                       class="form-control"
-                                                       >
+                                            <div class="col-lg-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label required">Sana</label>
+                                                    <input type="date" 
+                                                           x-model="orderDate" 
+                                                           class="form-control" 
+                                                           >
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
+                                </template>
                                 </template>
                             </div>
                         </div>
@@ -396,11 +437,274 @@
                 </div>
             </div>
         </form>
+        <!-- Модальное окно для калькулятора -->
+        <div class="modal fade" id="calculatorModal" tabindex="-1" role="dialog" aria-labelledby="calculatorModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="calculatorModalLabel">Kalkulyator</h5>
+                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true" @click="calcModal.hide()">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="form-group col-md-4">
+                                <label for="width">Eni (sm)</label>
+                                <input type="number" id="calc-width" x-model="calcItem.x" class="form-control" placeholder="Kenglikni kiriting" required>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="height">Bo'yi (sm)</label>
+                                <input type="number" id="calc-height" x-model="calcItem.y" class="form-control" placeholder="Balandlikni kiriting" required>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="quantity">Soni</label>
+                                <input type="number" id="calc-quantity" x-model="calcItem.quantity" class="form-control" placeholder="Miqdor kiriting" min="1" value="1">
+                            </div>
+                        </div>
+                        <!-- Добавляем поле для отображения dimension_amount -->
+                        <div class="row mt-3">
+                            <div class="form-group col-md-12">
+                                <label for="dimension-amount">O'lcham:</label>
+                                <div class="input-group">
+                                    <input type="text" id="dimension-amount" :value="calc() ? `${calcItem.dimension_amount} ${calcItem.unit} x ${calcItem.quantity} шт = ${calc()}` : calcItem.dimension_amount" class="form-control" readonly>
+                                    <span class="input-group-text" x-text="calcItem.unit"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                        <!-- Sub-services section -->
+                        <template x-if="calcItem.sub_services && calcItem.sub_services.length > 0">
+                            <div class="mt-4">
+                                <h6 class="mb-3">Qo'shimcha xizmatlar</h6>
+                                <div class="list-group">
+                                    <template x-for="subService in getSubServices(calcItem)" :key="subService.inner_id ? subService.inner_id : subService.id">
+                                        <div class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <div class="d-flex align-items-center">
+                                                    <span class="avatar me-3" 
+                                                          :style="'background-image: url(' + subService.image + ')'">
+                                                    </span>
+                                                    <div>
+                                                        <span x-text="subService.name"></span>
+                                                        <small class="text-muted d-block" x-text="'1 ' + subService.unit + ' uchun'"></small>
+                                                    </div>
+                                                </div>
+                                                <button class="btn btn-primary btn-sm d-flex align-items-center" 
+                                                        @click.prevent="addSubItem(subService)"
+                                                        :disabled="!calc()">
+                                                    <span class="me-2" x-text="subService.full_price + ' UZS'"></span>
+                                                    <span class="d-flex">
+                                                        <x-svg.plus class="icon"></x-svg.plus>
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                        </div>
+                        
+                        <template x-if="calcItem.subItems && calcItem.subItems.length > 0" >
+                            <div>
+                            <template x-for="subItem in calcItem.subItems" :key="subItem.inner_id">
+                            <div class="row mt-3">
+                                <div class="row col-lg-12 justify-content-between align-items-center">
+                                    <div class="col-6 d-flex align-items-center">
+                                        <span class="avatar me-3" 
+                                                :style="'background-image: url(' + subItem.image + ')'">
+                                        </span>
+                                        <div>
+                                            <span x-text="subItem.name"></span>
+                                            <small class="text-muted d-block" x-text="'1 ' + subItem.unit + ' uchun'"></small>
+                                        </div>
+                                    </div>
+                                    <button class="col-3 btn btn-danger btn-sm d-flex align-items-center" @click.prevent="removeSubService(subItem, calcItem)">
+                                        <span class="me-2" x-text="getItemTotal(subItem) + ' UZS'"></span>
+                                        <span class="d-flex">
+                                            <x-svg.trash class="icon"></x-svg.plus>
+                                        </span>
+                                    </button>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label :for="'sub-width-' + subItem.id">Eni (sm)</label>
+                                    <input type="number" :id="'sub-width-' + subItem.id" 
+                                            x-model="subItem.x" class="form-control" 
+                                            placeholder="Kenglikni kiriting">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label :for="'sub-height-' + subItem.id">Bo'yi (sm)</label>
+                                    <input type="number" :id="'sub-height-' + subItem.id" 
+                                            x-model="subItem.y" class="form-control" 
+                                            placeholder="Balandlikni kiriting">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label :for="'sub-quantity-' + subItem.id">Soni</label>
+                                    <input type="number" :id="'sub-quantity-' + subItem.id" 
+                                            x-model="subItem.quantity" class="form-control" 
+                                            placeholder="Miqdor kiriting" min="1" value="1">
+                                </div>
+                                <div class="form-group col-md-12">
+                                    <label for="dimension-amount">O'lcham:</label>
+                                    <div class="input-group">
+                                        <input type="text" :value="calcByItem(subItem) ? `${subItem.dimension_amount} ${subItem.unit} x ${subItem.quantity} шт = ${calcByItem(subItem)}` : subItem.dimension_amount" class="form-control" readonly>
+                                        <span class="input-group-text" x-text="subItem.unit"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            </template>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bekor qilish</button>
+                        <button type="button" class="btn btn-primary" :disabled="!calc()" @click.prevent="applyValues()">Qo'shish</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Добавляем модальное окно для ручного ввода -->
+        <div class="modal fade" id="manualInputModal" tabindex="-1" role="dialog" aria-labelledby="manualInputModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="manualInputModalLabel">Qiymatni qo'lda kiritish</h5>
+                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true" @click="manualModal.hide()">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="form-group col-md-8">
+                                <label for="manual-dimension">O'lcham</label>
+                                <div class="input-group">
+                                    <input type="number" id="manual-dimension" x-model="manualItem.dimension_amount" class="form-control" placeholder="Qiymatni kiriting" min="0" step="0.0001" required>
+                                    <span class="input-group-text" x-text="manualItem.unit"></span>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="manual-quantity">Soni</label>
+                                <input type="number" id="manual-quantity" x-model="manualItem.quantity" class="form-control" placeholder="Miqdor kiriting" min="1" value="1">
+                            </div>
+                        </div>
+
+                        <!-- Sub-services section -->
+                        <template x-if="manualItem.sub_services && manualItem.sub_services.length > 0">
+                            <div class="mt-4">
+                                <h6 class="mb-3">Qo'shimcha xizmatlar</h6>
+                                <div class="list-group">
+                                    <template x-for="subService in getSubServices(manualItem)" :key="subService.inner_id">
+                                        <div class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <div class="d-flex align-items-center">
+                                                    <span class="avatar me-3" 
+                                                          :style="'background-image: url(' + subService.image + ')'">
+                                                    </span>
+                                                    <div>
+                                                        <span x-text="subService.name"></span>
+                                                        <small class="text-muted d-block" x-text="'1 ' + subService.unit + ' uchun'"></small>
+                                                    </div>
+                                                </div>
+                                                <button class="btn btn-primary btn-sm d-flex align-items-center" 
+                                                        @click.prevent="addManualSubItem(subService)"
+                                                        :disabled="!isManualValid()">
+                                                    <span class="me-2" x-text="subService.full_price + ' UZS'"></span>
+                                                    <span class="d-flex">
+                                                        <x-svg.plus class="icon"></x-svg.plus>
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                        
+                        <template x-if="manualItem.subItems && manualItem.subItems.length > 0">
+                            <div class="mt-4">
+                                <h6 class="mb-3">Tanlangan qo'shimcha xizmatlar</h6>
+                                <template x-for="subItem in manualItem.subItems" :key="subItem.inner_id">
+                                    <div class="row mt-3">
+                                        <div class="row col-lg-12 justify-content-between align-items-center">
+                                            <div class="col-6 d-flex align-items-center">
+                                                <span class="avatar me-3" 
+                                                      :style="'background-image: url(' + subItem.image + ')'">
+                                                </span>
+                                                <div>
+                                                    <span x-text="subItem.name"></span>
+                                                    <small class="text-muted d-block" x-text="'1 ' + subItem.unit + ' uchun'"></small>
+                                                </div>
+                                            </div>
+                                            <button class="col-3 btn btn-danger btn-sm d-flex align-items-center" @click.prevent="removeSubService(subItem, manualItem)">
+                                                <span class="me-2" x-text="getItemTotal(subItem) + ' UZS'"></span>
+                                                <span class="d-flex">
+                                                    <x-svg.trash class="icon"></x-svg.plus>
+                                                </span>
+                                            </button>
+                                        </div>
+                                        <div class="form-group col-md-8">
+                                            <label :for="'manual-sub-dimension-' + subItem.id">O'lcham</label>
+                                            <div class="input-group">
+                                                <input type="number" :id="'manual-sub-dimension-' + subItem.id" 
+                                                       x-model="subItem.dimension_amount" class="form-control" 
+                                                       placeholder="Qiymatni kiriting" min="0" step="0.0001" required>
+                                                <span class="input-group-text" x-text="subItem.unit"></span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group col-md-4">
+                                            <label :for="'manual-sub-quantity-' + subItem.id">Soni</label>
+                                            <input type="number" :id="'manual-sub-quantity-' + subItem.id" 
+                                                   x-model="subItem.quantity" class="form-control" 
+                                                   placeholder="Miqdor kiriting" min="1" value="1">
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bekor qilish</button>
+                        <button type="button" class="btn btn-primary" :disabled="!isManualValid()" @click.prevent="applyManualValues()">Qo'shish</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
 @endsection
 
 @section('custom_scripts')
 <script>
+    const calc_m2 = "{{\App\Enums\Service\ServiceCalculatorTypeEnum::SquareMeter->value}}";
+    const calc_perimeter = "{{\App\Enums\Service\ServiceCalculatorTypeEnum::Perimeter->value}}";
+    const calcModal = new bootstrap.Modal(document.getElementById('calculatorModal'));
+    const manualModal = new bootstrap.Modal(document.getElementById('manualInputModal'));
+    const initialData = @json($initialData ?? []);
+    
+    const calcByItem = function(calcItem) {
+        let width = calcItem.x;
+        let height = calcItem.y;
+        let quantity = calcItem.quantity;
+
+        if (width && height && quantity) {
+            if (calcItem.calculator === calc_m2) {
+                let dm = (width * height * 0.0001);
+                calcItem.dimension_amount = dm.toFixed(4);
+                return (dm * quantity).toFixed(4);
+            } else if (calcItem.calculator === calc_perimeter) {
+                let dm = (parseFloat(width) + parseFloat(height)) * 2 * 0.01;
+                console.log(width, height, dm);
+                
+                calcItem.dimension_amount = dm.toFixed(4);
+                return (dm * quantity).toFixed(4);
+            }
+            return null;
+        }
+        return null;
+    }
+    
     document.addEventListener('alpine:init', () => {
         Alpine.data('OfferFormData', () => ({
             services: [],         
@@ -411,6 +715,7 @@
             discount: 0,
             isEditingDiscount: false,
             isSubmitting: false,
+            calcItem: {},
             client: {
                 name: '',
                 phone_number: '',
@@ -419,21 +724,51 @@
             },
             status: {{ \App\Enums\Offer\OfferStatusEnum::Draft->value }},
             orderDate: '',
+            manualItem: {},
+            
+            addSubItem(subService) {
+                const parentItem = this.offerItems.find(item => item.inner_id === this.calcItem.inner_id);
+                    if (!parentItem) return;
+                    const sub = { ...subService }; // Используем оператор расширения для клонирования
+
+                    sub.inner_id = Math.random(),
+                    sub.full_price = subService.full_price,
+                    sub.custom_price = null,
+                    sub.isEditingPrice = false,
+                    sub.quantity =  this.calcItem.quantity || subService.quantity || 1,
+                    sub.x = this.calcItem.x || subService.x,
+                    sub.y = this.calcItem.y || subService.y,
+                    sub.calculator = subService.calculator
+                    sub.dimension_amount = calcByItem(subService);
+                    sub.parent_inner_id = this.calcItem.inner_id;
+                    if (!this.calcItem.subItems) {
+                        this.calcItem.subItems = [];
+                    }
+                    this.calcItem.subItems.push(sub);
+            },
             
             get isFormValid() {
                 return this.offerItems.length > 0 && 
-                       this.client.name && 
-                       this.client.phone_number;
+                       this.client.name; // && 
+                       //this.client.phone_number;
             },
             
             init() {
                 this.services = @json($categories ?? []);
                 
-                // Инициализация данных из копируемого заказа
-                const initialData = @json($initialData ?? null);
+                // Инициализация данных из initialData
                 if (initialData) {
-                    this.offerItems = initialData.offerItems;
-                    this.discount = initialData.discount;
+                    if (initialData.offerItems && initialData.offerItems.length > 0) {
+                        this.offerItems = initialData.offerItems;
+                    }
+                    
+                    if (initialData.discount) {
+                        this.discount = initialData.discount;
+                    }
+                    
+                    if (initialData.orderDate) {
+                        this.orderDate = initialData.orderDate;
+                    }
                 }
                 
                 this.debug();
@@ -455,8 +790,7 @@
                 
                 this.services.forEach(category => {
                     category.services.forEach(service => {
-                        if (!this.isServiceInOrder(service.id) && 
-                            service.name.toLowerCase().includes(query)) {
+                        if (service.name.toLowerCase().includes(query)) {
                             results.push(service);
                         }
                     });
@@ -471,40 +805,43 @@
                 this.isSearching = false;
             },
 
-            updateQuantity(id, quantity) {
+            updateQuantity(item, quantity) {
+                console.log(typeof quantity, quantity);  
+                const numQuantity = parseFloat(quantity.trim().replace(",", "."));
+                let id = item.inner_id;
                 console.log('updateQuantity:', id, quantity);
-                const numQuantity = parseFloat(quantity);
                 if (numQuantity <= 0) {
                     this.removeItem(id);
                     return;
                 }
                 
-                const index = this.offerItems.findIndex(item => item.id === id);
+                const index = this.offerItems.findIndex(item => item.inner_id === id);
                 if (index !== -1) {
                     this.offerItems[index].quantity = numQuantity;
                 }
             },
 
-            removeItem(id) {
-                console.log('removeItem:', id);
-                this.offerItems = this.offerItems.filter(item => item.id !== id);
+            removeItem(inner_id) {
+                console.log('removeItem:', inner_id);
+                this.offerItems = this.offerItems.filter(item => item.inner_id !== inner_id);
             },
 
-            toggleEditPrice(id) {
-                const item = this.offerItems.find(item => item.id === id);
+            toggleEditPrice(inner_id, subItem = null) {
+                let item = subItem ? subItem : this.offerItems.find(item => item.inner_id === inner_id);
                 if (item) {
                     if (item.isEditingPrice) {
                         item.isEditingPrice = false;
                     } else {
-                        // Сбрасываем редактирование для всех других элементов
-                        this.offerItems.forEach(i => i.isEditingPrice = false);
+                        // Boshqa elementlar uchun tahrirni tozalash
+                        if (!subItem) {
+                            this.offerItems.forEach(i => i.isEditingPrice = false);
+                        }
                         item.isEditingPrice = true;
                     }
                 }
             },
 
-            saveCustomPrice(id, value) {
-                const item = this.offerItems.find(item => item.id === id);
+            saveCustomPrice(item, value) {
                 if (item) {
                     const newPrice = parseFloat(value);
                     if (newPrice && newPrice > 0) {
@@ -516,8 +853,8 @@
                 }
             },
 
-            cancelEditPrice(id) {
-                const item = this.offerItems.find(item => item.id === id);
+            cancelEditPrice(item) {
+                //const item = this.offerItems.find(item => item.inner_id === inner_id);
                 if (item) {
                     item.isEditingPrice = false;
                 }
@@ -526,39 +863,49 @@
             getItemTotal(item) {
                 if (!item) return 0;
                 const price = item.custom_price || item.full_price;
-                return parseFloat((price * (item.quantity || 1)).toFixed(2));
+                return parseFloat((price * (item.quantity || 1) * (item.dimension_amount || 1)).toFixed(4));
             },
-
+            getItemSum(item) {
+                const price = this.getItemTotal(item);
+                if (item.subItems && item.subItems.length) {
+                    return price + item.subItems.reduce((sum, subItem) => sum + this.getItemTotal(subItem), 0);
+                }
+                return price;
+            },
             getTotalSum() {
                 if (!this.offerItems.length) return 0;
-                return this.offerItems.reduce((sum, item) => sum + this.getItemTotal(item), 0);
+                let sum = this.offerItems.reduce((sum, item) => sum + this.getItemSum(item), 0);
+                return Math.round(sum);
             },
-
-            addToOrder(service) {
+            addToOrder(service, parentInnerId = null) {
                 console.log('Adding service:', service);
-                if (!this.isServiceInOrder(service.id)) {
-                    this.offerItems.push({
-                        id: service.id,
-                        name: service.name,
-                        unit: service.unit,
-                        image: service.image,
-                        full_price: service.full_price,
-                        custom_price: null,
-                        isEditingPrice: false,
-                        quantity: 1
-                    });
-                    console.log('Updated offerItems:', this.offerItems);
-                }
-            },
-
-            isServiceInOrder(serviceId) {
-                if (!serviceId) return false;
-                return this.offerItems.some(item => item.id === serviceId);
+                const newItem = {
+                    inner_id: Math.random(),
+                    id: service.id,
+                    name: service.name,
+                    unit: service.unit,
+                    image: service.image,
+                    full_price: service.full_price,
+                    price: service.price,
+                    custom_price: null,
+                    isEditingPrice: false,
+                    quantity: 1,
+                    x: null,
+                    y: null,
+                    dimension_amount: 1,
+                    custom_amount: null,
+                    calculator: service.calculator,
+                    parent_inner_id: parentInnerId,
+                    sub_services: service.sub_services || [],
+                    subItems: []
+                };
+                this.offerItems.push(newItem);
+                console.log('Updated offerItems:', this.offerItems);
             },
 
             getAvailableServices(category) {
                 if (!category || !category.services) return [];
-                return category.services.filter(service => !this.isServiceInOrder(service.id));
+                return category.services;
             },
 
             getAvailableServicesCount(category) {
@@ -598,9 +945,9 @@
             },
 
             debug() {
-                console.log('Services:', this.services);
-                console.log('Offer Items:', this.offerItems);
-                console.log('Client:', this.client);
+                console.log('Xizmatlar:', this.services);
+                console.log('Taklif elementlari:', this.offerItems);
+                console.log('Mijoz:', this.client);
             },
 
             prepareOfferItems() {
@@ -609,7 +956,22 @@
                     quantity: item.quantity,
                     price: item.custom_price || item.full_price,
                     original_price: item.full_price,
-                    cost: this.getItemTotal(item)
+                    item_cost: this.getItemTotal(item),
+                    cost: this.getItemSum(item),
+                    x: item.x,
+                    y: item.y,
+                    dimension_amount: item.dimension_amount,
+                    sub_items: item.subItems.map(subItem => ({
+                        service_id: subItem.id,
+                        quantity: subItem.quantity,
+                        price: subItem.custom_price || subItem.full_price,
+                        original_price: subItem.full_price,
+                        item_cost: this.getItemTotal(subItem),
+                        cost: this.getItemSum(subItem),
+                        x: subItem.x,
+                        y: subItem.y,
+                        dimension_amount: subItem.dimension_amount
+                    }))
                 }));
             },
 
@@ -628,10 +990,9 @@
                         },
                         status: this.status,
                         discount: this.discount,
-                        order_date: this.orderDate,
+                        created_at: this.orderDate,
                         offer_items: this.prepareOfferItems()
                     });
-
                     const response = await fetch('{{ route('offers.save') }}', {
                         method: 'POST',
                         headers: {
@@ -657,7 +1018,6 @@
                     
                     const result = await response.json();
                     console.log('Javob ma\'lumotlari:', result);
-
                     if (result.success) {
                         window.location.href = result.redirect || '{{ route('offers.index') }}';
                     } else {
@@ -672,7 +1032,144 @@
                 } finally {
                     this.isSubmitting = false;
                 }
-            }
+            },
+            serviceHasCalculator(item) {
+                // Проверяем, есть ли у услуги поле calculator
+                return !item.parent_inner_id && item.calculator !== null && item.calculator !== undefined;
+            },
+            getItemMemo(item) {
+                let dm_a = !isNaN(item.dimension_amount) ? parseFloat(item.dimension_amount).toFixed(2) : '';
+                let memo = dm_a + ' ' + item.unit;
+                if (item.x || item.y) {
+                    let x = item.x ? item.x : '?';
+                    let y = item.y ? item.y : '?';
+                    memo = `${x}sm x ${y} sm = ` + memo;
+                }
+                return memo;
+            },
+            getSumDimensionAmount(item) {
+                return item.custom_amount 
+                    ? parseFloat(item.custom_amount) 
+                    : (parseFloat(item.dimension_amount) * parseInt(item.quantity)).toFixed(4);
+            },
+            openCalculator(item) {
+                this.calcItem = { ...item }; // Клонируем объект item
+                calcModal.show(); // Открываем модальное окно
+            },
+            applyValues() {
+                let amount = this.calc();
+                if (amount) {
+                    let x = this.calcItem.x;
+                    let y = this.calcItem.y;
+                    let quantity = this.calcItem.quantity;
+                    // Найдите offerItem по this.calcItem.inner_id;
+                    const offerItem = this.offerItems.find(item => item.inner_id === this.calcItem.inner_id);
+                    if (offerItem) {
+                        offerItem.x = x;
+                        offerItem.y = y;
+                        offerItem.quantity = quantity;
+                        offerItem.dimension_amount = this.calcItem.dimension_amount; // Обновляем нужные поля
+                        offerItem.subItems = this.calcItem.subItems;
+                        calcModal.hide();
+                    }
+                    calcModal.hide(); // Закрываем модальное окно
+                }
+                return null;
+            },
+            calc() {
+                let width = this.calcItem.x;
+                let height = this.calcItem.y;
+                let quantity = this.calcItem.quantity;
+
+                if (width && height && quantity) {
+                    if (this.calcItem.calculator === calc_m2) {
+                        let dm = (width * height * 0.0001);
+                        this.calcItem.dimension_amount = dm.toFixed(4);
+                        return (dm * quantity).toFixed(4);
+                    } else if (this.calcItem.calculator === calc_perimeter) {
+                        let dm = (parseFloat(width) + parseFloat(height)) * 2 * 0.01;
+                        console.log(width, height, dm);
+                        
+                        this.calcItem.dimension_amount = dm.toFixed(4);
+                        return (dm * quantity).toFixed(4);
+                    }
+                    return null;
+                }
+                return null;
+            },
+            getSubServices(item) {
+                const services = item.sub_services || [];
+                const subItems = item.subItems || [];
+                if (services && services.length > 0) {
+                    if (subItems && subItems.length > 0) {
+                        return services.filter(service => {
+                            return !subItems.find(subItem => subItem.id === service.id);
+                        })
+                    }
+                }
+                return services;
+            },
+            removeSubItem(subItem, item) {
+                this.removeSubService(subItem, item);
+            },
+            removeSubService(subItem, item) {
+                if (item && item.subItems) {
+                    item.subItems = item.subItems.filter(sub => sub.id !== subItem.id);
+                }
+            },
+            getItemAsGroup(item) {
+                let group = [item, ...item.subItems];
+                if(group.length > 1) {
+                    group.push({is_summary: true, 'cost' : this.getItemSum(item), inner_id: Math.random(), parent_inner_id: item.inner_id});
+                };
+                return group;
+            },
+            getServicePriceLabel(service) {
+                let price = service.full_price;
+                if (service.price !== service.full_price) {
+                    price = `${service.price} / ${price} UZS`;
+                }
+                return price;
+            },
+            openManualInput(item) {
+                this.manualItem = { ...item }; // Клонируем объект item
+                manualModal.show(); // Открываем модальное окно
+            },
+            isManualValid() {
+                return this.manualItem.dimension_amount > 0;
+            },
+            
+            addManualSubItem(subService) {
+                const parentItem = this.offerItems.find(item => item.inner_id === this.manualItem.inner_id);
+                if (!parentItem) return;
+                
+                const sub = { ...subService }; // Используем оператор расширения для клонирования
+                
+                sub.inner_id = Math.random();
+                sub.full_price = subService.full_price;
+                sub.custom_price = null;
+                sub.isEditingPrice = false;
+                sub.quantity = this.manualItem.quantity || subService.quantity || 1;
+                sub.dimension_amount = 1; // Начальное значение
+                sub.parent_inner_id = this.manualItem.inner_id;
+                
+                if (!this.manualItem.subItems) {
+                    this.manualItem.subItems = [];
+                }
+                this.manualItem.subItems.push(sub);
+            },
+            applyManualValues() {
+                if (this.isManualValid()) {
+                    // Найдите offerItem по this.manualItem.inner_id
+                    const offerItem = this.offerItems.find(item => item.inner_id === this.manualItem.inner_id);
+                    if (offerItem) {
+                        offerItem.dimension_amount = this.manualItem.dimension_amount;
+                        offerItem.quantity = this.manualItem.quantity;
+                        offerItem.subItems = this.manualItem.subItems;
+                        manualModal.hide();
+                    }
+                }
+            },
         }));
     });     
 </script>
