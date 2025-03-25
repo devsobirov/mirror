@@ -479,7 +479,7 @@
                             <div class="mt-4">
                                 <h6 class="mb-3">Qo'shimcha xizmatlar</h6>
                                 <div class="list-group">
-                                    <template x-for="subService in getSubServices(calcItem)" :key="subService.inner_id">
+                                    <template x-for="subService in getSubServices(calcItem)" :key="subService.inner_id ? subService.inner_id : subService.id">
                                         <div class="list-group-item">
                                             <div class="d-flex justify-content-between align-items-center mb-3">
                                                 <div class="d-flex align-items-center">
