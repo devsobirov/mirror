@@ -115,14 +115,14 @@
                         <td></td>
                         <td colspan="3">
                         @foreach(explode("<br>", $item['full_memo']) as $memo)
-                            <div style="font-size: 14px; margin-top: 1mm;">{{$memo}}</div>
+                            <div style="font-size: 15px; margin-top: 1mm;" class="text-bold">{{$memo}}</div>
                         @endforeach
                         </td>
                     </tr>
                 @endif
                 @endforeach
                 @foreach($totals as $text)
-                <tr><td colspan="4" @if($loop->last) style="border-bottom:none" @endif>{{$text}}</td></tr>
+                <tr><td colspan="4" @if($loop->last) style="border-bottom:none; font-size:15px;" @else style="font-size:15px;"@endif>{{$text}}</td></tr>
                 @endforeach
             </tbody>
         </table>

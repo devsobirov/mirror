@@ -721,7 +721,7 @@
                 note: ''
             },
             status: {{ \App\Enums\Offer\OfferStatusEnum::Draft->value }},
-            orderDate: '',
+            orderDate: "{{date('Y-m-d')}}",
             manualItem: {},
             
             addSubItem(subService) {
