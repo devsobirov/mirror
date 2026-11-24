@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers\Service;
 
+use App\Enums\Offer\OfferStatusEnum;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Offers\SaveOfferRequest;
+use App\Http\Requests\Offers\SearchClientRequest;
+use App\Http\Resources\Offers\OfferItemResource;
+use App\Http\Resources\Offers\OfferResource;
+use App\Http\Resources\Services\CategoryWithServicesResource;
+use App\Models\Client;
 use App\Models\PrintSetting;
 use App\Models\Services\Offer;
-use Illuminate\Http\Request;
 use App\Models\Services\ServiceCategory as Category;
-use App\Http\Resources\Offers\OfferItemResource;
-use App\Http\Resources\Services\CategoryWithServicesResource;
-use App\Http\Requests\Offers\SaveOfferRequest;
-use App\Http\Resources\Offers\OfferResource;
-use Illuminate\Http\Resources\Json\ResourceCollection;
-use App\Enums\Offer\OfferStatusEnum;
-use Illuminate\Validation\Rule;
 use App\Services\OfferService;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class OffersController extends Controller
 {
@@ -55,12 +56,13 @@ class OffersController extends Controller
     public function form()
     {
         $categories = Category::query()
-            ->with(['services' => fn($q) => $q->where('active', true)->with('subServices')])
+            ->with(['services' => fn ($q) => $q->where('active', true)->with('subServices')])
             ->whereHas('services')
             ->orderBy('id')
             ->get();
 
         $categories = CategoryWithServicesResource::collection($categories);
+
         return view('services.offer-form', compact('categories'));
     }
 
@@ -73,29 +75,57 @@ class OffersController extends Controller
                     'success' => true,
                     'message' => 'Заказ успешно сохранен',
                     'redirect' => route('offers.index'),
-                    'req_data' => $request->validated()
+                    'req_data' => $request->validated(),
                 ]);
             }
-            
+
             return redirect()->route('offers.index')->with('success', 'Заказ успешно сохранен');
         } catch (\Exception $e) {
             \Log::error('Error saving offer:', ['error' => $e->getMessage()]);
-            
+
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Ошибка при сохранении заказа'
+                    'message' => 'Ошибка при сохранении заказа',
                 ], 500);
             }
-            
+
             return back()->with('error', 'Ошибка при сохранении заказа');
         }
+    }
+
+    /**
+     * Поиск клиентов из базы по части номера телефона (модалка в форме заказа).
+     */
+    public function searchClients(SearchClientRequest $request)
+    {
+        $phone = $request->validated('phone');
+
+        $clients = Client::query()
+            ->where(fn ($q) => $q->where('phone', 'like', "%{$phone}%")->orWhere('phone2', 'like', "%{$phone}%"))
+            ->orderBy('name')
+            ->limit(10)
+            ->get(['id', 'name', 'phone', 'phone2'])
+            ->map(fn (Client $client) => [
+                'id' => $client->id,
+                'name' => $client->name,
+                'phone' => $client->phone,
+                'phone2' => $client->phone2,
+                'phone_number' => $client->phone_number,
+                'phone_number2' => $client->phone_number2,
+            ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => $clients->isEmpty() ? 'Mijoz topilmadi' : '',
+            'clients' => $clients,
+        ]);
     }
 
     public function updateStatus(Request $request, Offer $offer)
     {
         $rules = [
-            'status' => ['required', 'integer', Rule::in(array_keys(OfferStatusEnum::list()))]
+            'status' => ['required', 'integer', Rule::in(array_keys(OfferStatusEnum::list()))],
         ];
 
         if (auth()->user()->isAdmin()) {
@@ -103,7 +133,7 @@ class OffersController extends Controller
                 'client_name' => ['nullable', 'string', 'max:255'],
                 'phone' => ['nullable', 'string', 'max:255'],
                 'phone2' => ['nullable', 'string', 'max:255'],
-                'created_at' => ['nullable', 'date']
+                'created_at' => ['nullable', 'date'],
             ]);
         }
 
@@ -116,16 +146,16 @@ class OffersController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Статус заказа обновлен'
+            'message' => 'Статус заказа обновлен',
         ]);
     }
 
     public function destroy(Offer $offer)
     {
-        if ($offer->status !== OfferStatusEnum::Draft->value && !auth()->user()->isAdmin()) {
+        if ($offer->status !== OfferStatusEnum::Draft->value && ! auth()->user()->isAdmin()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Можно удалять только черновики заказов'
+                'message' => 'Можно удалять только черновики заказов',
             ], 403);
         }
 
@@ -133,7 +163,7 @@ class OffersController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Заказ удален'
+            'message' => 'Заказ удален',
         ]);
     }
 
@@ -141,7 +171,7 @@ class OffersController extends Controller
     {
         // Явно загружаем связанные данные только для детального просмотра
         $offer->load(['offerItems.service', 'manager']);
-        
+
         return new OfferResource($offer);
     }
 
@@ -149,19 +179,19 @@ class OffersController extends Controller
     {
         // Загружаем связанные данные, включая подэлементы
         $offer->load(['offerItems.service', 'offerItems.subItems']);
-        
+
         // Подготавливаем данные для формы
         $categories = Category::query()
-            ->with(['services' => fn($q) => $q->where('active', true)->with('subServices')])
+            ->with(['services' => fn ($q) => $q->where('active', true)->with('subServices')])
             ->whereHas('services')
             ->orderBy('id')
             ->get();
-        
+
         $categories = CategoryWithServicesResource::collection($categories);
-        
+
         // Подготовим начальные данные для Alpine.js
         $initialData = [
-            'offerItems' => $offer->offerItems->whereNull('parent_item_id')->map(function($item) {
+            'offerItems' => $offer->offerItems->whereNull('parent_item_id')->map(function ($item) {
                 $itemData = [
                     'inner_id' => mt_rand(100000, 999999), // Генерируем уникальный ID для Alpine.js
                     'id' => $item->service->id,
@@ -177,12 +207,12 @@ class OffersController extends Controller
                     'y' => $item->y,
                     'dimension_amount' => $item->dimension_amount,
                     'calculator' => $item->service->calculator_id,
-                    'sub_services' => $item->service->subServices ?? []
+                    'sub_services' => $item->service->subServices ?? [],
                 ];
-                
+
                 // Добавляем подэлементы, если они есть
                 if ($item->subItems && $item->subItems->count() > 0) {
-                    $itemData['subItems'] = $item->subItems->map(function($subItem) use ($itemData) {
+                    $itemData['subItems'] = $item->subItems->map(function ($subItem) use ($itemData) {
                         return [
                             'inner_id' => mt_rand(100000, 999999), // Генерируем уникальный ID для Alpine.js
                             'id' => $subItem->service->id,
@@ -198,13 +228,13 @@ class OffersController extends Controller
                             'y' => $subItem->y,
                             'dimension_amount' => $subItem->dimension_amount,
                             'calculator' => $subItem->service->calculator_id,
-                            'parent_inner_id' => $itemData['inner_id']
+                            'parent_inner_id' => $itemData['inner_id'],
                         ];
                     })->toArray();
                 } else {
                     $itemData['subItems'] = [];
                 }
-                
+
                 return $itemData;
             })->toArray(),
             'discount' => $offer->discount,
@@ -212,7 +242,7 @@ class OffersController extends Controller
             'phone' => '',
             'phone2' => '',
             'comment' => '',
-            'orderDate' => Carbon::now()->format('Y-m-d')
+            'orderDate' => Carbon::now()->format('Y-m-d'),
         ];
 
         return view('services.offer-copy-form', compact('categories', 'initialData'));
@@ -220,16 +250,16 @@ class OffersController extends Controller
 
     public function getPrint(Offer $offer)
     {
-        $settings = PrintSetting::first() ?? new PrintSetting();
+        $settings = PrintSetting::first() ?? new PrintSetting;
         $originalItems = $offer->offerItems;
-       // Загружаем необходимые отношения
+        // Загружаем необходимые отношения
         $offer->load(['offerItems.service', 'offerItems.subItems', 'manager']);
         $items = $originalItems->whereNull('parent_item_id');
 
         // Преобразуем $offer в массив с помощью OfferResource
         $offer = (new OfferResource($offer))->toArray(request());
         $offer['offer_items'] = [];
-        foreach($items as $item) {
+        foreach ($items as $item) {
             $offer['offer_items'][] = (new OfferItemResource($item))->toArray(request());
         }
 
@@ -246,14 +276,15 @@ class OffersController extends Controller
             $unit = $group->first()->service->unit;
 
             // Вычисляем сумму dimension_amount для группы
-            $totalDimensionAmount = 0; 
-            foreach($group as $g) {
+            $totalDimensionAmount = 0;
+            foreach ($group as $g) {
                 $totalDimensionAmount += ($g->dimension_amount * $g->quantity);
             }
 
             // Добавляем результат в массив $totals
-            $totals[] = "$serviceName " . number_format($totalDimensionAmount, 2, '.', ' ') . " $unit";
+            $totals[] = "$serviceName ".number_format($totalDimensionAmount, 2, '.', ' ')." $unit";
         }
+
         return view('prints.offer', compact('offer', 'settings', 'totals'));
     }
 
@@ -261,8 +292,10 @@ class OffersController extends Controller
     {
         if ($phone) {
             $phone = preg_replace('/\D/', '', $phone);
+
             return $phone ?: null;
         }
+
         return null;
     }
 }

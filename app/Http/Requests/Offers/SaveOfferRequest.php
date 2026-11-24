@@ -19,6 +19,7 @@ class SaveOfferRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'client_id' => 'nullable|integer|exists:clients,id',
             'client_name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:255',
             'phone2' => 'nullable|string|max:255',
@@ -46,19 +47,20 @@ class SaveOfferRequest extends FormRequest
             'offer_items.*.sub_items.*.x' => 'nullable',
             'offer_items.*.sub_items.*.y' => 'nullable',
             'offer_items.*.sub_items.*.dimension_amount' => 'numeric|nullable',
-            'created_at' => 'nullable'
+            'created_at' => 'nullable',
         ];
     }
 
     protected function prepareForValidation(): void
     {
         $this->merge([
+            'client_id' => $this->input('client.id') ?: null,
             'client_name' => $this->input('client.name'),
             'phone' => $this->clearPhone($this->input('client.phone_number')),
             'phone2' => $this->clearPhone($this->input('client.phone_number2')),
             'comment' => $this->input('client.note'),
             'status' => $this->input('status', OfferStatusEnum::Draft->value),
-            'created_at' => $this->input('created_at') ? ($this->input('created_at') . ' ' . now()->format('H:i:s')) : now()->format('d-m-Y H:i:s'),
+            'created_at' => $this->input('created_at') ? ($this->input('created_at').' '.now()->format('H:i:s')) : now()->format('d-m-Y H:i:s'),
         ]);
     }
 
@@ -66,14 +68,17 @@ class SaveOfferRequest extends FormRequest
     {
         if ($phone) {
             $phone = preg_replace('/\D/', '', $phone);
+
             return $phone ?: null;
         }
+
         return null;
     }
 
     public function messages(): array
     {
         return [
+            'client_id.exists' => 'Tanlangan mijoz bazada topilmadi',
             'client_name.required' => 'Mijoz ismini kiriting',
             'client_name.max' => 'Mijoz ismi juda uzun',
             'phone.required' => 'Telefon raqamini kiriting',
@@ -99,7 +104,7 @@ class SaveOfferRequest extends FormRequest
             'offer_items.*.service_id.exists' => 'Tanlangan xizmat turi mavjud emas',
             'status.required' => 'Выберите статус заказа',
             'status.integer' => 'Некорректный формат статуса',
-            'status.in' => 'Выбран несуществующий статус', 
+            'status.in' => 'Выбран несуществующий статус',
         ];
     }
 }

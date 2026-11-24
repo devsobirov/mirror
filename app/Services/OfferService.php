@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Services\Offer;
 use App\Enums\Offer\OfferStatusEnum;
+use App\Models\Services\Offer;
 
 class OfferService
 {
@@ -11,9 +11,10 @@ class OfferService
     {
         // Добавляем ID менеджера к данным
         $data['manager_id'] = auth()->id();
-        
+
         // Подготавливаем данные заказа
         $offerData = [
+            'client_id' => $data['client_id'] ?? null,
             'client_name' => $data['client_name'],
             'phone' => $data['phone'],
             'phone2' => $data['phone2'],
@@ -21,9 +22,9 @@ class OfferService
             'status' => $data['status'] ?? OfferStatusEnum::Draft->value,
             'discount' => $data['discount'] ?? 0,
             'manager_id' => $data['manager_id'],
-            'created_at' => $data['created_at'] ?? now()
+            'created_at' => $data['created_at'] ?? now(),
         ];
-        
+
         // Рассчитываем общую стоимость и скидку
         $totalCost = collect($data['offer_items'])->sum(function ($item) {
             return $item['cost'];
@@ -46,11 +47,11 @@ class OfferService
                 'item_cost' => $item['item_cost'],
                 'x' => $item['x'] ?? null,
                 'y' => $item['y'] ?? null,
-                'dimension_amount' => $item['dimension_amount'] ?? null
+                'dimension_amount' => $item['dimension_amount'] ?? null,
             ]);
 
             // Создаем подпозиции, если они есть
-            if (!empty($item['sub_items'])) {
+            if (! empty($item['sub_items'])) {
                 foreach ($item['sub_items'] as $subItem) {
                     $offerItem->subItems()->create([
                         'service_id' => $subItem['service_id'],

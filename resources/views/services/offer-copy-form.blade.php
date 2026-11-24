@@ -343,7 +343,18 @@
                                 <!-- Mijoz ma'lumotlari formasi -->
                                 <template x-if="offerItems.length > 0">
                                     <div class="mt-4">
-                                        <h3 class="mb-3">Mijoz haqida ma'lumot</h3>
+                                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                                            <h3 class="mb-0">Mijoz haqida ma'lumot</h3>
+                                            <button type="button" class="btn btn-outline-primary btn-sm" @click="openClientSearch()">
+                                                Bazadan tanlash
+                                            </button>
+                                        </div>
+                                        <template x-if="client.id">
+                                            <div class="alert alert-info d-flex align-items-center justify-content-between py-2 mb-3">
+                                                <span>Bazadagi mijoz <strong x-text="'#' + client.id"></strong></span>
+                                                <button type="button" class="btn btn-sm btn-ghost-secondary" @click="unlinkClient()" title="Mijozni ajratish">&times;</button>
+                                            </div>
+                                        </template>
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="mb-3">
@@ -437,6 +448,57 @@
                 </div>
             </div>
         </form>
+        <!-- Модальное окно поиска клиента в базе -->
+        <div class="modal fade" id="clientSearchModal" tabindex="-1" role="dialog" aria-labelledby="clientSearchModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="clientSearchModalLabel">Mijozni bazadan qidirish</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label class="form-label">Telefon raqami</label>
+                        <div class="input-group mb-2">
+                            <span class="input-group-text">+998</span>
+                            <input type="text"
+                                   x-ref="clientSearchPhone"
+                                   x-model="clientSearch.phone"
+                                   @keydown.enter.prevent="searchClients()"
+                                   class="form-control"
+                                   placeholder="(00) 000-00-00"
+                                   x-init="() => {
+                                       $nextTick(() => {
+                                           new IMask($el, {
+                                               mask: '(00) 000-00-00'
+                                           });
+                                       });
+                                   }">
+                            <button type="button" class="btn btn-primary" :disabled="clientSearch.isLoading" @click="searchClients()">
+                                <span x-show="clientSearch.isLoading" class="spinner-border spinner-border-sm me-1"></span>
+                                Qidirish
+                            </button>
+                        </div>
+                        <div class="text-muted small mb-3">Raqamning kamida 3 ta raqamini kiriting</div>
+                        <div class="text-danger mb-2" x-show="clientSearch.error" x-text="clientSearch.error"></div>
+                        <div class="text-muted" x-show="clientSearch.searched && !clientSearch.error && clientSearch.results.length === 0">Mijoz topilmadi</div>
+                        <div class="list-group" x-show="clientSearch.results.length > 0">
+                            <template x-for="c in clientSearch.results" :key="c.id">
+                                <button type="button" class="list-group-item list-group-item-action" @click="selectClient(c)">
+                                    <div class="fw-bold" x-text="c.name"></div>
+                                    <div class="text-muted small">
+                                        <span x-text="c.phone_number"></span>
+                                        <span x-show="c.phone_number2" x-text="', ' + c.phone_number2"></span>
+                                    </div>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Yopish</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- Модальное окно для калькулятора -->
         <div class="modal fade" id="calculatorModal" tabindex="-1" role="dialog" aria-labelledby="calculatorModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
@@ -681,6 +743,13 @@
     const calc_perimeter = "{{\App\Enums\Service\ServiceCalculatorTypeEnum::Perimeter->value}}";
     const calcModal = new bootstrap.Modal(document.getElementById('calculatorModal'));
     const manualModal = new bootstrap.Modal(document.getElementById('manualInputModal'));
+    const clientModal = new bootstrap.Modal(document.getElementById('clientSearchModal'));
+    // 9 цифр из БД -> формат маски поля телефона "(99) 123-45-67"
+    const formatPhoneForMask = function(phone) {
+        if (!phone) return '';
+        if (!/^\d{9}$/.test(phone)) return phone;
+        return `(${phone.slice(0, 2)}) ${phone.slice(2, 5)}-${phone.slice(5, 7)}-${phone.slice(7, 9)}`;
+    }
     const initialData = @json($initialData ?? []);
     
     const calcByItem = function(calcItem) {
@@ -717,10 +786,18 @@
             isSubmitting: false,
             calcItem: {},
             client: {
+                id: null,
                 name: '',
                 phone_number: '',
                 phone_number2: '',
                 note: ''
+            },
+            clientSearch: {
+                phone: '',
+                results: [],
+                isLoading: false,
+                searched: false,
+                error: ''
             },
             status: {{ \App\Enums\Offer\OfferStatusEnum::Draft->value }},
             orderDate: '',
@@ -747,6 +824,60 @@
                     this.calcItem.subItems.push(sub);
             },
             
+            openClientSearch() {
+                this.clientSearch.error = '';
+                clientModal.show();
+                this.$nextTick(() => this.$refs.clientSearchPhone && this.$refs.clientSearchPhone.focus());
+            },
+
+            async searchClients() {
+                const digits = (this.clientSearch.phone || '').replace(/\D/g, '');
+                this.clientSearch.error = '';
+                if (digits.length < 3) {
+                    this.clientSearch.error = 'Kamida 3 ta raqam kiriting';
+                    return;
+                }
+
+                this.clientSearch.isLoading = true;
+                try {
+                    const url = '{{ route('offers.clients.search') }}?phone=' + encodeURIComponent(digits);
+                    const response = await fetch(url, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    });
+                    const result = await response.json();
+                    if (response.ok && result.success) {
+                        this.clientSearch.results = result.clients || [];
+                    } else {
+                        const errors = result.errors || {};
+                        const first = Object.values(errors)[0];
+                        this.clientSearch.results = [];
+                        this.clientSearch.error = first ? first[0] : (result.message || 'Xatolik yuz berdi');
+                    }
+                } catch (error) {
+                    console.error('Mijoz qidirish xatosi:', error);
+                    this.clientSearch.error = 'Xatolik yuz berdi. Qaytadan urinib ko\'ring';
+                } finally {
+                    this.clientSearch.isLoading = false;
+                    this.clientSearch.searched = true;
+                }
+            },
+
+            selectClient(c) {
+                this.client.id = c.id;
+                this.client.name = c.name || '';
+                this.client.phone_number = formatPhoneForMask(c.phone);
+                this.client.phone_number2 = formatPhoneForMask(c.phone2);
+                clientModal.hide();
+            },
+
+            unlinkClient() {
+                this.client.id = null;
+            },
+
             get isFormValid() {
                 return this.offerItems.length > 0 && 
                        this.client.name; // && 
@@ -990,6 +1121,7 @@
                 try {
                     console.log('Ma\'lumotlarni yuborish:', {
                         client: {
+                            id: this.client.id,
                             name: this.client.name,
                             phone_number: this.client.phone_number,
                             phone_number2: this.client.phone_number2,
@@ -1009,6 +1141,7 @@
                         },
                         body: JSON.stringify({
                             client: {
+                                id: this.client.id,
                                 name: this.client.name,
                                 phone_number: this.client.phone_number,
                                 phone_number2: this.client.phone_number2,
