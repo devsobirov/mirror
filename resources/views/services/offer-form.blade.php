@@ -194,7 +194,7 @@
                                                                 <div x-show="!item.is_summary">
                                                                     <template x-if="serviceHasCalculator(item)">
                                                                         <div class="d-flex align-items-center">
-                                                                            <p x-show="!item.isEditingDimension" x-text="`${getSumDimensionAmount(item)} ${item.unit}`"></p>
+                                                                            <p x-show="!item.isEditingDimension" x-text="`${fmtAmount(getSumDimensionAmount(item))} ${item.unit}`"></p>
                                                                             <input type="number" 
                                                                                 class="form-control form-control-sm" 
                                                                                 style="min-width: 80px" 
@@ -214,7 +214,7 @@
                                                                     </template>
                                                                     <template x-if="!serviceHasCalculator(item)">
                                                                         <div class="d-flex align-items-center">
-                                                                            <p x-show="!item.isEditingDimension" x-text="`${getSumDimensionAmount(item)} ${item.unit}`"></p>
+                                                                            <p x-show="!item.isEditingDimension" x-text="`${fmtAmount(getSumDimensionAmount(item))} ${item.unit}`"></p>
                                                                             <input type="number" 
                                                                                 class="form-control form-control-sm" 
                                                                                 style="min-width: 80px" 
@@ -250,7 +250,7 @@
                                                                                     <small class="text-decoration-line-through text-muted" 
                                                                                         x-text="getServicePriceLabel(item)">
                                                                                     </small>
-                                                                                    <span x-text="item.custom_price + ' UZS'"></span>
+                                                                                    <span x-text="fmtMoney(item.custom_price) + ' UZS'"></span>
                                                                                 </div>
                                                                             </template>
                                                                             <template x-if="!item.custom_price">
@@ -280,7 +280,7 @@
                                                                 </div>
                                                                 </template>
                                                             </td>
-                                                            <td x-text="(item.is_summary ? item.cost : getItemTotal(item)) + ' UZS'"></td>
+                                                            <td x-text="fmtMoney(item.is_summary ? item.cost : getItemTotal(item)) + ' UZS'"></td>
                                                             <td>
                                                                 <button x-show="!item.is_summary" class="btn btn-sm btn-danger" 
                                                                     @click="item.parent_inner_id ? removeSubItem(item, baseItem) : removeItem(item.inner_id)">
@@ -294,7 +294,7 @@
                                             <tfoot>
                                                 <tr>
                                                     <td colspan="4" class="text-end"><strong>Summa:</strong></td>
-                                                    <td><strong x-text="getTotalSum() + ' UZS'"></strong></td>
+                                                    <td><strong x-text="fmtMoney(getTotalSum()) + ' UZS'"></strong></td>
                                                     <td></td>
                                                 </tr>
                                                 <tr>
@@ -303,7 +303,7 @@
                                                             <strong>Chegirma:</strong>
                                                             <template x-if="!isEditingDiscount">
                                                                 <div class="d-flex align-items-center gap-2">
-                                                                    <span x-text="discount + ' UZS'"></span>
+                                                                    <span x-text="fmtMoney(discount) + ' UZS'"></span>
                                                                     <button class="btn btn-icon btn-sm btn-ghost-secondary" @click="toggleEditDiscount">
                                                                         <x-svg.pen class="icon"></x-svg.pen>
                                                                     </button>
@@ -327,12 +327,12 @@
                                                             </template>
                                                         </div>
                                                     </td>
-                                                    <td><strong x-text="discount + ' UZS'"></strong></td>
+                                                    <td><strong x-text="fmtMoney(discount) + ' UZS'"></strong></td>
                                                     <td></td>
                                                 </tr>
                                                 <tr>
                                                     <td colspan="4" class="text-end"><strong>Jami chegirma bilan:</strong></td>
-                                                    <td><strong x-text="getFinalTotal() + ' UZS'"></strong></td>
+                                                    <td><strong x-text="fmtMoney(getFinalTotal()) + ' UZS'"></strong></td>
                                                     <td></td>
                                                 </tr>
                                             </tfoot>
@@ -467,7 +467,7 @@
                             <div class="form-group col-md-12">
                                 <label for="dimension-amount">O'lcham:</label>
                                 <div class="input-group">
-                                    <input type="text" id="dimension-amount" :value="calc() ? `${calcItem.dimension_amount} ${calcItem.unit} x ${calcItem.quantity} шт = ${calc()}` : calcItem.dimension_amount" class="form-control" readonly>
+                                    <input type="text" id="dimension-amount" :value="calc() ? `${fmtAmount(calcItem.dimension_amount)} ${calcItem.unit} x ${calcItem.quantity} шт = ${fmtAmount(calc())}` : fmtAmount(calcItem.dimension_amount)" class="form-control" readonly>
                                     <span class="input-group-text" x-text="calcItem.unit"></span>
                                 </div>
                             </div>
@@ -494,7 +494,7 @@
                                                 <button class="btn btn-primary btn-sm d-flex align-items-center" 
                                                         @click.prevent="addSubItem(subService)"
                                                         :disabled="!calc()">
-                                                    <span class="me-2" x-text="subService.full_price + ' UZS'"></span>
+                                                    <span class="me-2" x-text="fmtMoney(subService.full_price) + ' UZS'"></span>
                                                     <span class="d-flex">
                                                         <x-svg.plus class="icon"></x-svg.plus>
                                                     </span>
@@ -522,7 +522,7 @@
                                         </div>
                                     </div>
                                     <button class="col-3 btn btn-danger btn-sm d-flex align-items-center" @click.prevent="removeSubService(subItem, calcItem)">
-                                        <span class="me-2" x-text="getItemTotal(subItem) + ' UZS'"></span>
+                                        <span class="me-2" x-text="fmtMoney(getItemTotal(subItem)) + ' UZS'"></span>
                                         <span class="d-flex">
                                             <x-svg.trash class="icon"></x-svg.plus>
                                         </span>
@@ -610,7 +610,7 @@
                                                 <button class="btn btn-primary btn-sm d-flex align-items-center" 
                                                         @click.prevent="addManualSubItem(subService)"
                                                         :disabled="!isManualValid()">
-                                                    <span class="me-2" x-text="subService.full_price + ' UZS'"></span>
+                                                    <span class="me-2" x-text="fmtMoney(subService.full_price) + ' UZS'"></span>
                                                     <span class="d-flex">
                                                         <x-svg.plus class="icon"></x-svg.plus>
                                                     </span>
@@ -638,7 +638,7 @@
                                                 </div>
                                             </div>
                                             <button class="col-3 btn btn-danger btn-sm d-flex align-items-center" @click.prevent="removeSubService(subItem, manualItem)">
-                                                <span class="me-2" x-text="getItemTotal(subItem) + ' UZS'"></span>
+                                                <span class="me-2" x-text="fmtMoney(getItemTotal(subItem)) + ' UZS'"></span>
                                                 <span class="d-flex">
                                                     <x-svg.trash class="icon"></x-svg.plus>
                                                 </span>
@@ -1020,7 +1020,7 @@
                 return !item.parent_inner_id && item.calculator !== null && item.calculator !== undefined;
             },
             getItemMemo(item) {
-                let dm_a = !isNaN(item.dimension_amount) ? parseFloat(item.dimension_amount).toFixed(2) : '';
+                let dm_a = !isNaN(item.dimension_amount) ? this.fmtAmount(item.dimension_amount) : '';
                 let memo = dm_a + ' ' + item.unit;
                 if (item.x || item.y) {
                     let x = item.x ? item.x : '?';
@@ -1106,10 +1106,23 @@
                 };
                 return group;
             },
+            // Форматирование только для вывода, в расчёт и payload не идёт.
+            // Количество: до 2 знаков без хвостовых нулей (как на чеке): 1.0000 → 1, 0.5600 → 0.56.
+            fmtAmount(value) {
+                const n = parseFloat(value);
+                if (isNaN(n)) return '';
+                return String(parseFloat(n.toFixed(2)));
+            },
+            // Деньги: целые UZS с пробелом между разрядами (как на чеке): 1234567.5 → 1 234 568.
+            fmtMoney(value) {
+                const n = parseFloat(value);
+                if (isNaN(n)) return '0';
+                return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+            },
             getServicePriceLabel(service) {
-                let price = service.full_price;
+                let price = this.fmtMoney(service.full_price) + ' UZS';
                 if (service.price !== service.full_price) {
-                    price = `${service.price} / ${price} UZS`;
+                    price = `${this.fmtMoney(service.price)} / ${price}`;
                 }
                 return price;
             },
