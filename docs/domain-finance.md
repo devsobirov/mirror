@@ -13,8 +13,8 @@
 
 ## Клиенты
 - Таблица `clients`, модель `App\Models\Client`. Пустой подкласс `App\Models\Finance\Client` нигде не используется.
-- Финансовый клиент не связан с заказом: в `offers` клиент хранится строкой `client_name` и телефонами,
-  а `offers.client_id` не заполняется.
+- В `offers` клиент хранится строкой `client_name` и телефонами. `offers.client_id` (без FK) заполняется,
+  только если в форме заказа клиент выбран из базы через поиск по номеру (`offers.clients.search`), иначе `null`.
 - `ClientSaveRequest` нормализует телефоны через `PhoneNormalizer` и проверяет уникальность каждого номера сразу по `phone` и `phone2`.
 - `clients.index` считает долг как `withSum(debts.amount) − withSum(payments.amount)`.
 

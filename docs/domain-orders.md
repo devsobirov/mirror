@@ -39,15 +39,25 @@
 ## Сохранение `POST offers.save`
 Payload (`prepareOfferItems` / `saveOffer` в форме):
 ```
-{ client: {name, phone_number, phone_number2, note}, status, discount, created_at: 'YYYY-MM-DD',
+{ client: {id?, name, phone_number, phone_number2, note}, status, discount, created_at: 'YYYY-MM-DD',
   offer_items: [{service_id, quantity, price, original_price, item_cost, cost, x, y, dimension_amount,
                  sub_items: [{…те же поля}]}] }
 ```
 - `SaveOfferRequest::prepareForValidation` раскладывает `client.*` по полям `client_name`, `phone`, `phone2`, `comment`,
   оставляет в телефонах только цифры и дописывает к дате текущее время. Статус по умолчанию — Draft.
+- `client.id` необязателен: это id из `clients`, если клиент выбран через поиск в форме (см. ниже).
+  `SaveOfferRequest` кладёт его в `client_id` (`exists:clients,id`), `OfferService::save` пишет в `offers.client_id`.
 - `OfferService::save` проставляет `manager_id = auth()->id()`, создаёт `Offer`, затем позиции, затем подпозиции
   (`parent_item_id`, `offer_id`).
 - Ответ: `{success, message, redirect, req_data}`. Если `success`, форма делает редирект на `redirect`.
+
+## Выбор клиента из базы
+- Ручной ввод клиента в форме не изменился, выбор из базы — дополнительная возможность.
+- Кнопка «Bazadan tanlash» открывает `#clientSearchModal`. Поиск — `GET offers.clients.search?phone=…`
+  (`OffersController::searchClients`, `Offers/SearchClientRequest`): минимум 3 цифры, ведущий `998` отрезается,
+  поиск `LIKE` по `clients.phone` и `phone2`, не больше 10 записей. Ответ `{success, message, clients: [{id, name, phone, phone2, phone_number, phone_number2}]}`.
+- Клик по клиенту заполняет имя и телефоны и ставит `client.id`. Плашка «Bazadagi mijoz #id» с кнопкой отвязки сбрасывает только `client.id`.
+- Есть в обеих формах (создание и копия). В копии клиент по-прежнему пустой, `client_id` из исходного заказа не переносится.
 
 ## Прочие операции
 - **Редактирования заказа нет, и это не баг.** Копирование — отдельная функция: `offers.copy` открывает форму копирования, где

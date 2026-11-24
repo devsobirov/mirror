@@ -9,7 +9,7 @@
 | 19–21 | | `home`, `worker.home` | `/` и `/home` → `HomeController@index` (редирект по роли); `/worker` |
 | 23–24 | | `profile.show`, `profile.update` | `Admin\ProfileController` |
 | 26–44 | | `sklad.*` | склад, см. `docs/legacy-warehouse.md` |
-| 46–55 | | `offers.*` | `Service\OffersController`: `index`, `form`, `save`, `show`, `update-status`, `destroy`, `copy`, `get-print` |
+| 46–55 | | `offers.*` | `Service\OffersController`: `index`, `form`, `save`, `clients.search`, `show`, `update-status`, `destroy`, `copy`, `get-print` |
 | 57–64 | | `finance.*` | `debts.index`, `debts.create`, `debts.pay`, `clients.index`, `clients.show`, `clients.save` |
 | 66–102 | + `auth`, `admin` | `/admin`, `admin.*` | дашборд и его AJAX (`chart.data`, `statistics.data`, `debts.data`), `users.*`, `services.*` (каталог), `print-settings.*`, склад-админка (`warehouses.*`, `goods.*`, `categories.*`, `suppliers.*`) |
 | 105–110 | — | `Auth::routes` | `register` и `verify` выключены; login, logout, password reset и confirm включены |
@@ -29,6 +29,6 @@
 |---|---|
 | Blade view | все `index`, `form`, `show` страниц |
 | `redirect()->back()->with('success', …)` | `*/save`, `finance.debts.create`, `finance.debts.pay`, `print-settings.save` |
-| JSON | `offers.save` (если `wantsJson`): `{success, message, redirect, req_data}`; `offers.update-status`, `offers.destroy`; `offers.show` (`OfferResource`); `admin.chart.data`, `admin.statistics.data`, `admin.debts.data` |
+| JSON | `offers.save` (если `wantsJson`): `{success, message, redirect, req_data}`; `offers.clients.search` (`{success, message, clients}`); `offers.update-status`, `offers.destroy`; `offers.show` (`OfferResource`); `admin.chart.data`, `admin.statistics.data`, `admin.debts.data` |
 | HTML-фрагмент для печати | `offers.get-print`. Его получают через `fetch` и открывают в `window.open` (`resources/views/services/offers.blade.php`) |
 | XLSX | экспорты склада |

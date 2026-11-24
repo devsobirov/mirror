@@ -8,11 +8,11 @@ use App\Http\Controllers\Admin\Warehouse\SupplierController;
 use App\Http\Controllers\Admin\Warehouse\WarehouseController;
 use App\Http\Controllers\Finance\ClientsController as FClientsController;
 use App\Http\Controllers\Finance\DebtsController;
+use App\Http\Controllers\PrintSettingController;
 use App\Http\Controllers\Service\OffersController;
 use App\Http\Controllers\Warehouse\ExpenseController;
 use App\Http\Controllers\Warehouse\IncomeController;
 use App\Http\Controllers\Warehouse\MainController;
-use App\Http\Controllers\PrintSettingController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'worker'])->group(function () {
@@ -47,6 +47,7 @@ Route::middleware(['auth', 'worker'])->group(function () {
         Route::get('/', 'index')->name('index');
         Route::get('/form', 'form')->name('form');
         Route::post('/save', 'save')->name('save');
+        Route::get('/clients/search', 'searchClients')->name('clients.search');
         Route::get('/{offer}', 'show')->name('show');
         Route::put('/{offer}/update-status', 'updateStatus')->name('update-status');
         Route::delete('/{offer}', 'destroy')->name('destroy');
@@ -103,8 +104,8 @@ Route::middleware(['auth', 'worker'])->group(function () {
 });
 
 Auth::routes([
-    //'login' => true,
-    //'reset' => true,
+    // 'login' => true,
+    // 'reset' => true,
     'register' => false,
     'verify' => false,
 ]);
